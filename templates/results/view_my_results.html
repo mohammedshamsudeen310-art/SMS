@@ -1,0 +1,209 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}My Results{% endblock %}
+
+{% block content %}
+<style>
+/* 🔹 Page Title */
+.page-title {
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 0.8rem;
+}
+
+/* 🔹 Description */
+.page-subtitle {
+  color: #4b5563;
+  font-size: 0.95rem;
+  margin-bottom: 1.2rem;
+}
+
+/* 🔹 Filter Section */
+.filter-form {
+  background: #f9fafb;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  margin-bottom: 1.5rem;
+}
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+.filter-form select {
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  width: 180px;
+  transition: all 0.3s ease;
+}
+.filter-form select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  outline: none;
+}
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.4rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* 🔹 Table */
+.table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.styled-table thead {
+  background: #1e3a8a;
+  color: #fff;
+}
+.styled-table th, .styled-table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+.styled-table tr:nth-child(even) { background: #f9fafb; }
+
+/* 🔹 Summary */
+.summary-box {
+  margin-top: 1.5rem;
+  background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
+  border-radius: 12px;
+  padding: 1.2rem 1.8rem;
+  display: flex;
+  gap: 2.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.summary-box p {
+  margin: 0;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+/* 🔹 No Data */
+.no-data {
+  color: #9ca3af;
+  font-style: italic;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* 🔹 Responsive */
+@media (max-width: 768px) {
+  .filter-grid { flex-direction: column; }
+  .filter-form select, .btn-primary { width: 100%; }
+  .summary-box { flex-direction: column; text-align: center; }
+}
+</style>
+
+<h2 class="page-title">📊 My Results</h2>
+<p class="page-subtitle">Select a session and term to view your academic performance. Each session’s results are kept separate for accuracy.</p>
+
+<!-- 🔹 Filter Section -->
+<form method="GET" class="filter-form">
+  <div class="filter-grid">
+    <select name="session" required>
+      <option value="">Select Session</option>
+      {% for s in sessions %}
+        <option value="{{ s.id }}" {% if s.id|stringformat:'s' == selected_session_id %}selected{% endif %}>{{ s.name }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="term" required>
+      <option value="">Select Term</option>
+      <option value="1st" {% if selected_term == "1st" %}selected{% endif %}>1st Term</option>
+      <option value="2nd" {% if selected_term == "2nd" %}selected{% endif %}>2nd Term</option>
+      <option value="3rd" {% if selected_term == "3rd" %}selected{% endif %}>3rd Term</option>
+    </select>
+
+    <button type="submit" class="btn-primary">View Results</button>
+  </div>
+</form>
+
+{% if results %}
+<hr>
+
+<div class="results-summary">
+  <div class="summary-header">
+    <h3>📅 Session: {{ results.0.session.name }} | 🏫 Term: {{ results.0.term }}</h3>
+  </div>
+
+  <div class="table-container">
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Subject</th>
+          <th>Test (40)</th>
+          <th>Exam (60)</th>
+          <th>Total</th>
+          <th>Grade</th>
+          <th>Remark</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ r.subject.name }}</td>
+          <td>{{ r.test_score }}</td>
+          <td>{{ r.exam_score }}</td>
+          <td><strong>{{ r.total_score }}</strong></td>
+          <td>{{ r.grade }}</td>
+          <td>{{ r.remark }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if results %}
+  <div style="margin-top: 20px;">
+      <!-- Download for selected session -->
+      <a href="{% url 'download_result' %}?session={{ selected_session_id }}" class="back-btn">
+          📥 Download Session Result
+      </a>
+
+      <!-- Download full result -->
+      <a href="{% url 'download_result' %}" class="back-btn">
+          📥 Download Full Result
+      </a>
+  </div>
+  {% endif %}
+
+
+  </div>
+
+  <div class="summary-box">
+    <p><strong>Total Score:</strong> {{ total_score }}</p>
+    <p><strong>Average:</strong> {{ average }}</p>
+  </div>
+</div>
+
+{% else %}
+  {% if selected_session_id and selected_term %}
+    <p class="no-data">⚠️ No results available for the selected session and term.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

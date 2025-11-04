@@ -1,0 +1,47 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Delete Student{% endblock %}
+{% block header %}🗑️ Confirm Delete{% endblock %}
+
+{% block content %}
+<div class="delete-confirm">
+  <h2>Are you sure you want to delete <strong>{{ student.user.get_full_name }}</strong>?</h2>
+  <p>This action will permanently remove the student and their account.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn danger">Yes, Delete</button>
+    <a href="{% url 'manage_students' %}" class="btn cancel">Cancel</a>
+  </form>
+</div>
+
+<style>
+.delete-confirm {
+  background: #fff;
+  padding: 2rem;
+  margin: 3rem auto;
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  margin: 0 6px;
+}
+.btn.danger {
+  background-color: #e53935;
+}
+.btn.cancel {
+  background-color: #757575;
+}
+.btn:hover {
+  opacity: 0.9;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,374 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %}</title>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert-top {{ message.tags }}">
+        {{ message }}
+        <button class="close-top" onclick="this.parentElement.style.display='none'">&times;</button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <style>
+  /* ======= GLOBAL RESET ======= */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+  }
+
+  body {
+    background: #f4f7fb;
+    color: #333;
+    min-height: 100vh;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  /* ======= ALERTS ======= */
+  .alert-top {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 60%;
+    padding: 12px 20px;
+    border-radius: 0 0 8px 8px;
+    color: #fff;
+    font-weight: 500;
+    text-align: center;
+    z-index: 9999;
+    animation: fadeIn 0.4s ease-in-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .alert-top.success, .alert-top.message-success { background: #4CAF50; }
+  .alert-top.error, .alert-top.message-error { background: #f44336; }
+  .alert-top.warning, .alert-top.message-warning { background: #ff9800; }
+  .alert-top.info, .alert-top.message-info { background: #2196F3; }
+
+  .close-top {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    position: absolute;
+    right: 15px;
+    top: 5px;
+    cursor: pointer;
+  }
+
+  /* ======= DASHBOARD WRAPPER ======= */
+  .dashboard-container {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+    transition: all 0.3s ease;
+  }
+
+  /* ======= SIDEBAR ======= */
+  .sidebar {
+    background: linear-gradient(180deg, #004aad, #1565c0);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    transition: all 0.3s ease;
+    z-index: 999;
+  }
+
+  /* 🔹 Close button (mobile only) */
+  .close-sidebar-btn {
+    display: none;
+    background: transparent;
+    color: #fff;
+    font-size: 1.8rem;
+    border: none;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  .sidebar-header {
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .sidebar-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+/* Sidebar navigation list */
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px; /* reduced space from top */
+    gap: 4px; /* smaller space between items */
+    flex-grow: 1; /* allows logout to stick to bottom */
+  }
+
+  /* Sidebar links */
+  .nav-link {
+    padding: 10px 20px; /* more compact */
+    color: #e3f2fd;
+    font-weight: 500;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  /* Active / hover states */
+  .nav-link.active,
+  .nav-link:hover {
+    background-color: #1a73e8;
+    color: #fff;
+    border-left-color: #fff;
+  }
+
+  /* 🔹 Logout section sticks to bottom neatly */
+  .sidebar-footer {
+    margin-top: auto; /* push to bottom */
+    padding: 10px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Logout link */
+  .logout-btn {
+    color: #f28b82;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+  .logout-btn:hover {
+    color: #ff6f61;
+  }
+
+  /* ======= MAIN SECTION ======= */
+  .main-section {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    min-height: 100vh;
+    transition: all 0.3s ease;
+    overflow-x: hidden;
+  }
+
+  .main-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 20px 40px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #004aad;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    {% comment %} gap: 15px; {% endcomment %}
+  }
+
+  .main-content {
+    padding: 30px 40px;
+    flex: 1;
+    background: #f8faff;
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 15px;
+    background: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  /* ======= TOGGLE BUTTON ======= */
+  .toggle-btn {
+    display: none;
+    background: #004aad;
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+
+  /* ======= SCROLLBAR ======= */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb {
+    background: #004aad;
+    border-radius: 10px;
+  }
+
+  /* ======= ANIMATIONS ======= */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ======= MOBILE SIDEBAR ======= */
+  @media (max-width: 768px) {
+    .dashboard-container {
+      grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -260px;
+      height: 100%;
+      width: 260px;
+      transition: left 0.3s ease;
+    }
+
+    .sidebar.open {
+      left: 0;
+    }
+
+    .close-sidebar-btn {
+      display: block;
+    }
+
+    .toggle-btn {
+      display: block;
+    }
+
+    .main-content {
+      padding: 20px;
+    }
+  }
+
+  /* Large desktops */
+  @media (min-width: 1200px) {
+    .main-content {
+      padding: 40px 60px;
+    }
+  }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-container">
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar" id="sidebar">
+      <!-- 🔹 Close button (visible only on mobile) -->
+      <button class="close-sidebar-btn" onclick="toggleSidebar()">×</button>
+
+      <div class="sidebar-header">
+        <h2>🎓 Center for Glory</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        {% if user.role == "admin" %}
+          <a href="{% url 'admin_dashboard' %}" class="nav-link">🏠 Admin Dashboard</a>
+          <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
+          <a href="{% url 'conversation_list' %}" class="nav-link">📨 Messages</a>
+          <a href="{% url 'manage_fees' %}" class="nav-link">📚 Manage Fees</a>
+          <a href="{% url 'financial_report' %}" class="nav-link">📊 Financial Reports</a>
+          <a href="{% url 'manage_students' %}" class="nav-link">🎓 Manage Students</a>
+          <a href="{% url 'manage_teachers' %}" class="nav-link">👨‍🏫 Manage Teachers</a>
+          <a href="{% url 'subject_list' %}" class="nav-link">📚 Manage Courses</a>
+          <a href="{% url 'manage_sessions' %}" class="nav-link">📚 Manage Sessions</a>
+          <a href="{% url 'manage_parents' %}" class="nav-link">👨‍👩‍👧 Manage Parents</a>
+
+
+        {% elif user.role == "teacher" %}
+          <a href="{% url 'teacher_dashboard' %}" class="nav-link">🏠 Teacher Dashboard</a>
+          <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
+          <a href="{% url 'conversation_list' %}" class="nav-link">📨 Messages</a>
+          <a href="#" class="nav-link">🕒 Attendance Sessions</a>
+          <a href="#" class="nav-link">📝 Mark Attendance</a>
+          <a href="{% url 'mark_results' %}" class="nav-link">🖊️ Mark Results</a>
+          <a href="#" class="nav-link">📈 Student Results</a>
+          
+        {% elif user.role == "student" %}
+          <a href="{% url 'student_dashboard' %}" class="nav-link">🏠 Student Dashboard</a>
+          <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
+          <a href="#" class="nav-link">🕒 Attendance Record</a>
+          <a href="{% url 'my_invoices' %}" class="nav-link">💰 My Invoices</a>
+          <a href="{% url 'student_fees' %}" class="nav-link">🧾 My Fees</a>
+          <a href="{% url 'view_my_results' %}" class="nav-link">📊 View Results</a>
+          
+          {% elif user.role == "accountant" %}
+          <a href="{% url 'accountant_dashboard' %}" class="nav-link">🏠 Accountant Dashboard</a>
+          <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
+          <a href="{% url 'conversation_list' %}" class="nav-link">📨 Messages</a>
+          <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
+          <a href="{% url 'record_payment' %}" class="nav-link">💸 Record Payment</a>
+          <a href="{% url 'financial_report' %}" class="nav-link">📊 Financial Reports</a>
+          
+          {% elif user.role == "parent" %}
+          <a href="{% url 'parent_dashboard' %}" class="nav-link">🏠 Parent Dashboard</a>
+          <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
+          <a href="{% url 'conversation_list' %}" class="nav-link">📨 Messages</a>
+          <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
+          <a href="{% url 'child_performance' %}" class="nav-link">📚 Child Performance</a>
+          <a href="#" class="nav-link">🕒 Attendance</a>
+          <a href="{% url 'parent_payment_history' %}" class="nav-link">💰 Payment History</a>
+        {% endif %}
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="{% url 'logout' %}" class="logout-btn">🚪 Logout</a>
+      </div>
+    </aside>
+
+    <!-- ===== Main Section ===== -->
+    <main class="main-section">
+      <header class="main-header">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <span>{% block header %}Dashboard{% endblock %}</span>
+      </header>
+
+      <section class="main-content">
+        {% block content %}{% endblock %}
+      </section>
+
+      <footer class="footer">
+        © {{ now|date:"Y" }} Shamsudeen — All rights reserved.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
+    }
+
+    // Auto-close sidebar when resizing back to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 700) {
+        document.getElementById("sidebar").classList.remove("open");
+      }
+    });
+  </script>
+
+</body>
+</html>

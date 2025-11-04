@@ -1,0 +1,224 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Financial Report{% endblock %}
+
+{% block content %}
+<h2 class="page-title">💰 Student Financial Report</h2>
+
+<div class="report-wrapper">
+  <!-- 🔹 Filter & Export Controls -->
+  <div class="filter-bar">
+    <form method="GET" action="{% url 'financial_report' %}" class="filter-form">
+      <!-- 🔸 Session Filter -->
+      <select name="session" class="filter-input">
+        <option value="">-- Select Session --</option>
+        {% for s in sessions %}
+          <option value="{{ s.id }}" {% if request.GET.session == s.id|stringformat:'s' %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- 🔸 Term Filter -->
+      <select name="term" class="filter-input">
+        <option value="">-- Select Term --</option>
+        <option value="1st" {% if request.GET.term == '1st' %}selected{% endif %}>1st Term</option>
+        <option value="2nd" {% if request.GET.term == '2nd' %}selected{% endif %}>2nd Term</option>
+        <option value="3rd" {% if request.GET.term == '3rd' %}selected{% endif %}>3rd Term</option>
+      </select>
+
+      <!-- 🔸 Payment Status Filter -->
+      <select name="status" class="filter-input">
+        <option value="">-- Payment Status --</option>
+        <option value="Cleared" {% if request.GET.status == 'Cleared' %}selected{% endif %}>Cleared</option>
+        <option value="Owing" {% if request.GET.status == 'Owing' %}selected{% endif %}>Owing</option>
+        <option value="Overpaid" {% if request.GET.status == 'Overpaid' %}selected{% endif %}>Overpaid</option>
+      </select>
+
+      <!-- 🔍 Student Search -->
+        <input type="text" name="search" placeholder="🔍 Search by Student ID..." value="{{ request.GET.search }}" class="filter-input">
+
+      <button type="submit" class="btn primary">Search</button>
+      <a href="{% url 'financial_report' %}" class="btn reset">Reset</a>
+    </form>
+
+    <!-- ✅ Export Buttons -->
+    <div class="export-buttons">
+      <a href="{% url 'export_financial_report_excel' %}?session={{ request.GET.session }}&term={{ request.GET.term }}&status={{ request.GET.status }}&search={{ request.GET.search }}&export_excel=true" class="btn excel">📊 Export Excel</a>
+      <a href="{% url 'export_financial_report_pdf' %}?session={{ request.GET.session }}&term={{ request.GET.term }}&status={{ request.GET.status }}&search={{ request.GET.search }}&export_pdf=true" class="btn pdf">📄 Export PDF</a>
+    </div>
+  </div>
+
+  <!-- 🔹 Financial Report Table -->
+  <div class="table-container">
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Session</th>
+          <th>Term</th>
+          <th>Total Due (₦)</th>
+          <th>Total Paid (₦)</th>
+          <th>Balance (₦)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in report_data %}
+        <tr>
+          <td>{{ record.student_id }}</td>
+          <td>{{ record.session__name }}</td>
+          <td>{{ record.term }}</td>
+          <td>{{ record.total_due|floatformat:2 }}</td>
+          <td>{{ record.total_paid|floatformat:2 }}</td>
+          <td>{{ record.balance|floatformat:2 }}</td>
+          <td>
+            {% if record.status == "Cleared" %}
+              <span class="badge success">{{ record.status }}</span>
+            {% elif record.status == "Overpaid" %}
+              <span class="badge info">{{ record.status }}</span>
+            {% else %}
+              <span class="badge danger">{{ record.status }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="no-records">No records found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+/* (Your original beautiful styles — unchanged) */
+.page-title {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #222;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.report-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  padding: 25px;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.filter-input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn.primary { background: #007bff; color: #fff; }
+.btn.primary:hover { background: #0056d2; }
+
+.btn.reset { background: #6c757d; color: #fff; }
+.btn.reset:hover { background: #5a6268; }
+
+.btn.excel { background: #28a745; color: #fff; }
+.btn.excel:hover { background: #218838; }
+
+.btn.pdf { background: #dc3545; color: #fff; }
+.btn.pdf:hover { background: #b02a37; }
+
+.table-container { overflow-x: auto; }
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  color: #333;
+}
+
+.report-table thead {
+  background: linear-gradient(90deg, #0056d2, #007bff);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.report-table th, .report-table td {
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.report-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.report-table tbody tr:hover {
+  background-color: #f8f9fc;
+  transform: scale(1.01);
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  display: inline-block;
+}
+
+.badge.success { background: #28a745; }
+.badge.danger { background: #dc3545; }
+.badge.info { background: #17a2b8; }
+
+.no-records {
+  text-align: center;
+  font-style: italic;
+  color: #888;
+  padding: 20px 0;
+}
+
+@media (max-width: 768px) {
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-form { justify-content: center; }
+  .btn { width: 100%; text-align: center; }
+  .page-title { font-size: 20px; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}

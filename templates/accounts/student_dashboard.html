@@ -1,0 +1,450 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}My Academic Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+/* 🌟 Page Title */
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 📊 Statistic Cards */
+.card {
+  position: relative;
+  border-radius: 16px;
+  padding: 1.2rem 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.07);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -40%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(16,185,129,0.08), transparent 60%);
+  transform: rotate(25deg);
+}
+.card h3 {
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 0.2rem;
+}
+.card .value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #065f46;
+}
+
+/* 🧾 Table + Chart Section */
+.table-wrapper {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.table-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.table-title::before {
+  content: "▍";
+  color: #10b981;
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+th, td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+th {
+  background: #f8fafc;
+  color: #334155;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  color: #475569;
+}
+tr:hover td {
+  background-color: #f9fafb;
+}
+
+/* 📈 Chart */
+canvas {
+  margin-top: 1rem;
+  width: 100% !important;
+  height: 280px !important;
+}
+
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  .page-title { font-size: 1.5rem; }
+  .card .value { font-size: 1.5rem; }
+}
+</style>
+
+<h2 class="page-title">🎓 Academic Overview</h2>
+
+<div class="dashboard-container">
+  <div class="card">
+    <h3>Average Score</h3>
+    <div class="value">{{ avg_score|default:"0" }}</div>
+  </div>
+  <div class="card">
+    <h3>Best Subject</h3>
+    <div class="value">
+      {% if best_subject %}
+        {{ best_subject.subject }}
+      {% else %}
+        -
+      {% endif %}
+    </div>
+  </div>
+  <div class="card">
+    <h3>Lowest Subject</h3>
+    <div class="value">
+      {% if worst_subject %}
+        {{ worst_subject.subject }}
+      {% else %}
+        -
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="table-wrapper">
+  <div class="table-title">📈 Term Performance</div>
+  <canvas id="termChart"></canvas>
+</div>
+
+<div class="table-wrapper">
+  <div class="table-title">🧾 Recent Results</div>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Term</th>
+          <th>Session</th>
+          <th>Total</th>
+          <th>Grade</th>
+          <th>Remark</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in recent_results %}
+          {% if r.total_score > 0 %}
+          <tr>
+            <td>{{ r.subject }}</td>
+            <td>{{ r.term }}</td>
+            <td>{{ r.session }}</td>
+            <td><strong>{{ r.total_score }}</strong></td>
+            <td>
+              <span style="color:
+                {% if r.grade == 'A' %}#16a34a
+                {% elif r.grade == 'F' %}#dc2626
+                {% else %}#2563eb{% endif %};
+                font-weight:600;">
+                {{ r.grade }}
+              </span>
+            </td>
+            <td>{{ r.remark }}</td>
+          </tr>
+          {% endif %}
+        {% empty %}
+          <tr><td colspan="6" style="text-align:center; color:#94a3b8;">No results yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('termChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{ terms|safe }},
+    datasets: [{
+      label: 'Average Score',
+      data: {{ avg_scores|safe }},
+      borderColor: '#10b981',
+      backgroundColor: 'rgba(16,185,129,0.15)',
+      tension: 0.3,
+      fill: true,
+      pointRadius: 5,
+      pointBackgroundColor: '#065f46',
+    }]
+  },
+  options: {
+    scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } } },
+    plugins: { legend: { display: false } },
+  }
+});
+</script>
+
+<div class="finance-section">
+
+  <!-- 🌟 Finance Overview -->
+  <div class="finance-header">
+    <h2>💰 Finance Overview</h2>
+    <p>Track your school fees and payments at a glance.</p>
+  </div>
+
+  <div class="finance-cards">
+    <div class="finance-card">
+      <h3>Total Fees Due</h3>
+      <p class="value">₵{{ total_due|floatformat:2 }}</p>
+    </div>
+
+    <div class="finance-card success">
+      <h3>Total Paid</h3>
+      <p class="value">₵{{ total_paid|floatformat:2 }}</p>
+    </div>
+
+    <div class="finance-card danger">
+      <h3>Outstanding Balance</h3>
+      <p class="value">₵{{ total_balance|floatformat:2 }}</p>
+    </div>
+
+    <div class="finance-card neutral">
+      <h3>Fees Cleared</h3>
+      <p class="value">{{ cleared_fees }}</p>
+    </div>
+  </div>
+
+  <!-- 🧾 Recent Invoices Table -->
+  <div class="invoice-section">
+    <h3 class="invoice-title">🧾 Recent Invoices</h3>
+    <div class="table-responsive">
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Invoice No.</th>
+            <th>Session</th>
+            <th>Term</th>
+            <th>Total Due</th>
+            <th>Paid</th>
+            <th>Balance</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in invoices %}
+          <tr>
+            <td>{{ inv.invoice_number }}</td>
+            <td>{{ inv.session }}</td>
+            <td>{{ inv.term }}</td>
+            <td>₵{{ inv.total_due|floatformat:2 }}</td>
+            <td>₵{{ inv.total_paid|floatformat:2 }}</td>
+            <td>₵{{ inv.balance|floatformat:2 }}</td>
+            <td>
+              {% if inv.is_paid %}
+                <span class="status paid">Paid</span>
+              {% else %}
+                <span class="status pending">Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="empty">No invoices yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+
+  /* 📱 Horizontal Scroll for Tables on Mobile */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+}
+
+.table-responsive table {
+  width: 100%;
+  min-width: 600px; /* prevents squishing on small screens */
+  border-collapse: collapse;
+}
+
+/* 🌟 Finance Section */
+.finance-section {
+  background: #f9fafb;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin-top: 1.5rem;
+}
+
+/* Header */
+.finance-header {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+.finance-header h2 {
+  font-size: 1.5rem;
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+.finance-header p {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+/* Cards Layout */
+.finance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.finance-card {
+  background: white;
+  padding: 1.2rem 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.finance-card::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -40%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(16,185,129,0.08), transparent 60%);
+  transform: rotate(25deg);
+}
+.finance-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+.finance-card h3 {
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.finance-card .value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+.finance-card.success .value { color: #16a34a; }
+.finance-card.danger .value { color: #dc2626; }
+.finance-card.neutral .value { color: #2563eb; }
+
+/* 🧾 Table Section */
+.invoice-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+}
+.invoice-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.invoice-title::before {
+  content: "▍";
+  color: #10b981;
+  font-weight: bold;
+}
+
+/* Table */
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.invoice-table th, .invoice-table td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+.invoice-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #334155;
+}
+.invoice-table td {
+  color: #475569;
+}
+.invoice-table tr:hover td {
+  background: #f9fafb;
+}
+
+/* Status */
+.status {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.status.paid {
+  background: rgba(22,163,74,0.1);
+  color: #16a34a;
+}
+.status.pending {
+  background: rgba(220,38,38,0.1);
+  color: #dc2626;
+}
+.empty {
+  text-align: center;
+  color: #94a3b8;
+  padding: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .finance-section { padding: 1rem; }
+  .finance-cards { grid-template-columns: 1fr 1fr; }
+  .invoice-table th, .invoice-table td { font-size: 0.85rem; }
+}
+</style>
+
+
+{% endblock %}

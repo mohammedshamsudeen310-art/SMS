@@ -1,0 +1,109 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Child Performance{% endblock %}
+
+{% block content %}
+<style>
+/* ===== Page Title ===== */
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #004aad;
+    margin-bottom: 20px;
+}
+
+/* ===== Children List ===== */
+.children-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.child-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.child-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.child-name {
+    font-weight: 500;
+    color: #004aad;
+    font-size: 1rem;
+}
+
+.child-level {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-left: 8px;
+}
+
+/* ===== View Results Button ===== */
+.view-results-btn {
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #004aad, #1565c0);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.view-results-btn:hover {
+    background: linear-gradient(135deg, #1565c0, #004aad);
+    transform: translateY(-2px);
+}
+
+/* ===== No Children Text ===== */
+.text-muted {
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .child-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .view-results-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+
+<h2 class="page-title">📚 Child Performance</h2>
+
+<div class="children-list">
+    {% if children %}
+        {% for child in children %}
+            <div class="child-card">
+                <div>
+                    <span class="child-name">{{ child.user.get_full_name }}</span>
+                    {% if child.level %}
+                        <span class="child-level">({{ child.level }})</span>
+                    {% endif %}
+                </div>
+                <a href="{% url 'child_result' child.id %}" class="view-results-btn">View Results</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No children assigned to your account.</p>
+    {% endif %}
+</div>
+{% endblock %}

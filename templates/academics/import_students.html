@@ -1,0 +1,210 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+{% block title %}Import Students{% endblock %}
+
+{% block content %}
+<div class="import-container">
+  <div class="import-card">
+    <h2 class="card-title">📥 Import Students from CSV</h2>
+    <p class="card-subtitle">Easily bulk-upload student data into the system in one click.</p>
+
+    <!-- ✅ Flash messages -->
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 📄 CSV Template -->
+    <div class="template-section">
+      <p>Before uploading, download the sample CSV template below:</p>
+      <a href="{% url 'download_student_template' %}" class="btn btn-success">
+        ⬇️ Download Template
+      </a>
+    </div>
+
+    <!-- 📤 Upload Form -->
+    <form method="post" enctype="multipart/form-data" class="import-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="csv_file">Choose CSV File:</label>
+        <input type="file" name="csv_file" id="csv_file" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">📤 Upload & Import</button>
+    </form>
+  </div>
+</div>
+
+<style>
+/* ==========================================
+   🎓 Import Students Page — Modern Styling
+   ========================================== */
+.import-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 1rem;
+  min-height: 70vh;
+  background: linear-gradient(135deg, #f9fbff 0%, #f2f6ff 100%);
+}
+
+.import-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  padding: 40px 45px;
+  width: 100%;
+  max-width: 600px;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.import-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+}
+
+.card-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.card-subtitle {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+/* ==============================
+   Alerts / Messages
+   ============================== */
+.messages {
+  margin-bottom: 20px;
+}
+
+.alert {
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: fadeIn 0.4s ease;
+}
+
+.alert-success {
+  background-color: #e9f7ef;
+  color: #1b6b36;
+  border: 1px solid #b6e3c6;
+}
+
+.alert-error,
+.alert-danger {
+  background-color: #fdecea;
+  color: #9e2a25;
+  border: 1px solid #f5c2c0;
+}
+
+.alert-warning {
+  background-color: #fff7e1;
+  color: #8a6105;
+  border: 1px solid #ffdfa3;
+}
+
+.alert-info {
+  background-color: #e7f3ff;
+  color: #0a558c;
+  border: 1px solid #b8e0ff;
+}
+
+/* ==============================
+   Form + Buttons
+   ============================== */
+.form-group {
+  margin-bottom: 25px;
+}
+
+label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccd6e3;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 4px rgba(59,130,246,0.4);
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.btn-success {
+  background-color: #22c55e;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #16a34a;
+}
+
+/* ==============================
+   Misc
+   ============================== */
+.template-section {
+  margin-bottom: 30px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+  .import-card {
+    padding: 30px 25px;
+  }
+  .card-title {
+    font-size: 1.4rem;
+  }
+}
+</style>
+{% endblock %}

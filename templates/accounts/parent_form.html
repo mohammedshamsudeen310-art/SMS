@@ -1,0 +1,290 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <div class="form-card animate-fadein">
+    <h2 class="form-title">{{ title }}</h2>
+    <p class="form-subtitle">Fill in the required details below to register a new parent profile.</p>
+
+    <form method="POST" enctype="multipart/form-data" class="styled-form">
+      {% csrf_token %}
+
+      <!-- 🔹 Messages -->
+      {% if messages %}
+        <div class="message-container">
+          {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+              {{ message|linebreaksbr }}
+            </div>
+
+            <!-- ✅ Optional Login Info Display -->
+            {% if "added successfully" in message %}
+              <div class="login-info-box">
+                <h4>👤 Parent Account Created</h4>
+                <p><strong>Username:</strong> (shown above)</p>
+                <p><strong>Password:</strong> <code>parent123</code></p>
+                <small>You can advise the parent to change their password after first login.</small>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- 🔹 Grid Layout -->
+      <div class="form-grid">
+        <!-- Username -->
+        <div class="form-group">
+          <label for="id_username">Username</label>
+          <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter username" required>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="id_email">Email</label>
+          <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter email address">
+        </div>
+
+        <!-- Full Name -->
+        <div class="form-group full-width">
+          <label for="id_fullname">Full Name</label>
+          <input type="text" name="fullname" id="id_fullname" class="form-control" placeholder="Enter full name">
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="form-group">
+          <label for="id_date_of_birth">Date of Birth</label>
+          {{ form.date_of_birth }}
+        </div>
+
+        <!-- Gender -->
+        <div class="form-group">
+          <label for="id_gender">Gender</label>
+          {{ form.gender }}
+        </div>
+
+        <!-- Address -->
+        <div class="form-group full-width">
+          <label for="id_address">Address</label>
+          {{ form.address }}
+        </div>
+
+        <!-- Photo -->
+        <div class="form-group">
+          <label for="id_photo">Photo</label>
+          {{ form.photo }}
+        </div>
+
+        <!-- Occupation -->
+        <div class="form-group">
+          <label for="id_occupation">Occupation</label>
+          {{ form.occupation }}
+        </div>
+
+        <!-- Relationship -->
+        <div class="form-group">
+          <label for="id_relationship">Relationship</label>
+          {{ form.relationship }}
+        </div>
+
+        <!-- Children -->
+        <div class="form-group full-width">
+          <label for="id_children">Assign Children</label>
+          {{ form.children }}
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-save"></i> Save Parent
+        </button>
+        <a href="{% url 'manage_parents' %}" class="btn-secondary">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 🌐 Select2 (for Children Multi-Select) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+  $('#id_children').select2({
+    placeholder: "Search and select children...",
+    allowClear: true,
+    width: '100%',
+    theme: 'classic'
+  });
+});
+</script>
+
+<style>
+/* 🌟 Card Styling */
+.form-card {
+  background: #ffffff;
+  padding: 2rem 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  max-width: 950px;
+  margin: auto;
+  transition: transform 0.3s ease;
+}
+.form-card:hover {
+  transform: translateY(-3px);
+}
+
+/* 🌈 Typography */
+.form-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+.form-subtitle {
+  color: #7f8c8d;
+  font-size: 1rem;
+  margin-bottom: 1.8rem;
+}
+
+/* 🧩 Grid Layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+.full-width {
+  grid-column: span 2;
+}
+
+/* ✏️ Form Controls */
+.form-group label {
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+.form-control, .form-group select, .form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dcdde1;
+  border-radius: 10px;
+  background: #f9f9f9;
+  font-size: 0.95rem;
+  transition: 0.3s;
+}
+.form-control:focus {
+  border-color: #3498db;
+  background: #fff;
+  box-shadow: 0 0 5px rgba(52,152,219,0.3);
+}
+
+/* 🚀 Buttons */
+.form-actions {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.btn-primary, .btn-secondary {
+  padding: 0.8rem 1.4rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border: none;
+  color: #fff;
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2980b9, #1f6391);
+}
+.btn-secondary {
+  background: #ecf0f1;
+  color: #2c3e50;
+  text-decoration: none;
+}
+.btn-secondary:hover {
+  background: #dcdde1;
+}
+
+/* 💬 Alerts */
+.alert {
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+.alert.success, .alert.successmessage {
+  background: #eafaf1;
+  color: #1e8449;
+  border: 1px solid #27ae60;
+}
+.alert.error, .alert.errormessage {
+  background: #fdecea;
+  color: #c0392b;
+  border: 1px solid #e74c3c;
+}
+
+/* 🧾 Login Info Box */
+.login-info-box {
+  background: #f4faff;
+  border-left: 4px solid #3498db;
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.4s ease-in-out;
+}
+.login-info-box h4 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+.login-info-box code {
+  background: #ecf0f1;
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+/* 🎨 Select2 Styling */
+.select2-container--classic .select2-selection--multiple {
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  min-height: 46px;
+  padding: 6px;
+}
+.select2-selection__choice {
+  background-color: #3498db !important;
+  color: #fff !important;
+  border-radius: 5px !important;
+  padding: 4px 8px !important;
+  margin-top: 4px !important;
+}
+
+/* ✨ Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadein {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+  .form-card { padding: 1.5rem; }
+  .full-width { grid-column: span 1; }
+}
+</style>
+{% endblock %}

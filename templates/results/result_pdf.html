@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ student.user.get_full_name }} - Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 14px; color: #333; margin: 30px; }
+        h2 { text-align: center; color: #004aad; }
+        h4 { color: #1565c0; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #004aad; color: #fff; }
+        .session-title { font-weight: bold; font-size: 16px; margin-top: 30px; }
+        .totals { margin-top: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h2>📄 Result Statement: {{ student.user.get_full_name }}</h2>
+
+    {% for session_data in results_data %}
+        <h3>Session: {{ session_data.session.name }}</h3>
+
+        {% for term in session_data.terms %}
+            <h4>Term: {{ term.term_name }}</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Score</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in term.results %}
+                        <tr>
+                            <td>{{ result.subject.name }}</td>
+                            <td>{{ result.total_score }}</td>
+                            <td>{{ result.grade }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p>Total: {{ term.total }} | Average: {{ term.average }}</p>
+        {% endfor %}
+
+        <p><strong>Session Total: {{ session_data.session_total }} | Session Average: {{ session_data.session_average }}</strong></p>
+    {% endfor %}
+
+
+</body>
+</html>

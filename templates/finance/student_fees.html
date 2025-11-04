@@ -1,0 +1,129 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}My Fees{% endblock %}
+
+{% block content %}
+<style>
+  .fees-container {
+    background: #f8fafc;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  }
+
+  h2.page-title {
+    text-align: center;
+    color: #1e3a8a;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  /* 🔹 Scroll Wrapper */
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    min-width: 700px; /* keeps columns readable on small screens */
+  }
+
+  th, td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    white-space: nowrap; /* prevents breaking fee details */
+  }
+
+  thead {
+    background: #1e3a8a;
+    color: white;
+    text-transform: uppercase;
+    font-size: 14px;
+  }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: white;
+    font-weight: 600;
+  }
+  .badge-paid { background: #16a34a; }
+  .badge-unpaid { background: #dc2626; }
+
+  .text-center {
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  /* 📱 Mobile tweaks */
+  @media (max-width: 768px) {
+    .fees-container {
+      padding: 15px;
+    }
+    h2.page-title {
+      font-size: 1.4rem;
+    }
+    table th, table td {
+      padding: 10px;
+      font-size: 13px;
+    }
+  }
+</style>
+
+<div class="fees-container">
+  <h2 class="page-title">💰 My Fees</h2>
+
+  {% if error %}
+    <p class="text-center">{{ error }}</p>
+  {% else %}
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th>Term</th>
+            <th>Fee Type</th>
+            <th>Total (₵)</th>
+            <th>Paid (₵)</th>
+            <th>Balance (₵)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fee in fees %}
+          <tr>
+            <td>{{ fee.session.name }}</td>
+            <td>{{ fee.get_term_display }}</td>
+            <td>{{ fee.fee_type.name }}</td>
+            <td>{{ fee.total_amount }}</td>
+            <td>{{ fee.amount_paid }}</td>
+            <td>{{ fee.balance }}</td>
+            <td>
+              {% if fee.is_cleared %}
+                <span class="badge badge-paid">Paid</span>
+              {% else %}
+                <span class="badge badge-unpaid">Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center">No fee records available yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Manage Teachers{% endblock %}
+{% block header %}👨‍🏫 Manage Teachers{% endblock %}
+
+{% block content %}
+<style>
+/* 🎨 ===== Manage Teachers Page Styling ===== */
+
+.page-section {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* 🔹 Top Bar */
+.top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.top-bar h2 {
+    font-size: 1.5rem;
+    color: #2d3748;
+    font-weight: 700;
+}
+
+/* 📊 Teacher Count Badge */
+.count-box {
+    background: linear-gradient(135deg, #3182ce, #4f46e5);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 3px 10px rgba(49, 130, 206, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.count-box span {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* 🔍 Search Form */
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-form input {
+    padding: 0.6rem 1rem;
+    border: 1.5px solid #cbd5e0;
+    border-radius: 8px;
+    outline: none;
+    transition: 0.2s;
+    width: 220px;
+}
+
+.search-form input:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
+
+.search-form button {
+    background: #3182ce;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.search-form button:hover {
+    background: #2b6cb0;
+}
+
+/* 🔘 Top Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.action-buttons a {
+    text-decoration: none;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: 0.25s ease-in-out;
+}
+
+.action-buttons a.add {
+    background: #38a169;
+}
+
+.action-buttons a.add:hover {
+    background: #2f855a;
+}
+
+.action-buttons a.import {
+  background: #d69e2e;
+}
+.action-buttons a.import:hover {
+  background: #b7791f;
+}
+
+/* 📋 Data Table */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.data-table thead {
+    background: #3182ce;
+    color: #fff;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table tbody tr:hover {
+    background: #f7fafc;
+}
+
+/* 🔘 Buttons inside table */
+.btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn.edit {
+    background: #38a169;
+}
+
+.btn.edit:hover {
+    background: #2f855a;
+}
+
+.btn.delete {
+    background: #e53e3e;
+}
+
+.btn.delete:hover {
+    background: #c53030;
+}
+
+/* 🌀 Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="page-section">
+  <div class="top-bar">
+    <h2>Teacher List</h2>
+
+    <!-- 📊 Total Teachers Count -->
+    <div class="count-box">
+      👥 Total Teachers: <span>{{ teachers.count }}</span>
+    </div>
+
+    <form method="get" class="search-form">
+      <input type="text" name="q" placeholder="🔍 Search by name, ID, department..." value="{{ query }}">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+
+  <!-- 🌟 Action Buttons -->
+  <div class="action-buttons">
+    <a href="{% url 'add_teacher' %}" class="add">➕ Add Teacher</a>
+    <a href="{% url 'import_teachers' %}" class="import">📥 Import Teachers</a>
+  </div>
+
+  <!-- 📋 Table -->
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Full Name</th>
+        <th>Email</th>
+        <th>Department</th>
+        <th>Qualification</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for teacher in teachers %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ teacher.user.get_full_name }}</td>
+        <td>{{ teacher.user.email }}</td>
+        <td>{{ teacher.department }}</td>
+        <td>{{ teacher.qualification }}</td>
+        <td>
+          <a href="{% url 'edit_teacher' teacher.pk %}" class="btn edit">Edit</a>
+          <a href="{% url 'delete_teacher' teacher.pk %}" class="btn delete" 
+             onclick="return confirm('Are you sure you want to delete this teacher?')">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align:center; color:#718096;">No teachers found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

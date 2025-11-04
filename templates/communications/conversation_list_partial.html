@@ -1,0 +1,16 @@
+{% if conversations %}
+  <div class="conversation-list">
+    {% for c in conversations %}
+      <div class="conversation-card">
+        <a href="{% url 'conversation_detail' c.pk %}">
+          {{ c.name|default:"Conversation #" }}{{ c.pk }}
+        </a>
+        <small>{{ c.participants.count }} member{{ c.participants.count|pluralize }}</small>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-message">
+    <p>No conversations found.</p>
+  </div>
+{% endif %}

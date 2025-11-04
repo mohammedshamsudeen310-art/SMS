@@ -1,0 +1,28 @@
+{% comment %} {% extends "accounts/base_dashboard.html" %}
+{% block title %}Mark Attendance{% endblock %}
+{% block content %}
+<h2>📘 Mark Attendance for {{ session.subject.name }} ({{ session.date }})</h2>
+
+<form method="POST">
+  {% csrf_token %}
+  <table>
+    <thead>
+      <tr><th>Student</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for record in records %}
+      <tr>
+        <td>{{ record.student.full_name }}</td>
+        <td>
+          <select name="{{ record.id }}">
+            <option value="Present" {% if record.status == 'Present' %}selected{% endif %}>Present</option>
+            <option value="Absent" {% if record.status == 'Absent' %}selected{% endif %}>Absent</option>
+          </select>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="submit">Save Attendance</button>
+</form>
+{% endblock %} {% endcomment %}

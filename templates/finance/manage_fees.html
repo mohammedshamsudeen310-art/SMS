@@ -1,0 +1,94 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}💼 Fees Management{% endblock %}
+{% block header %}💼 Fees Management{% endblock %}
+
+{% block content %}
+<style>
+.finance-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  padding: 20px;
+  text-align: center;
+  transition: 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+}
+.card h3 {
+  font-size: 1.2rem;
+  color: #004aad;
+  margin-bottom: 8px;
+}
+.card p {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #222;
+}
+
+/* 🔹 Action Bar */
+.action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.action-btn {
+  display: inline-block;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.action-btn.type   { background: #28a745; }
+.action-btn.bulk   { background: #ff9800; }
+.action-btn.create { background: #f44336; }
+.action-btn.add    { background: #004aad; }
+.action-btn.invoice{ background: #673ab7; } /* 🟣 new button */
+.action-btn:hover  { opacity: 0.85; }
+
+/* 🔹 Responsive */
+@media (max-width: 600px) {
+  .action-btn {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+}
+</style>
+
+<!-- 🔹 Action Buttons -->
+<div class="action-bar">
+  <a href="{% url 'fee_types' %}" class="action-btn type">🧾 Fee Types</a>
+  <a href="{% url 'bulk_fee_assignment' %}" class="action-btn bulk">📦 Bulk Fee Assignment</a>
+  <a href="{% url 'bulk_create_fee_records' %}" class="action-btn create">🧮 Bulk Fee Creation</a>
+  <a href="{% url 'add_fee' %}" class="action-btn add">💰 Add Fees</a>
+  <a href="{% url 'manage_invoices' %}" class="action-btn invoice">🧾 Manage Invoices</a>  <!-- ✅ NEW LINK -->
+</div>
+
+<!-- 🔹 Finance Overview -->
+<div class="finance-dashboard">
+  <div class="card">
+    <h3>Total Fee Types</h3>
+    <p>{{ total_fees }}</p>
+  </div>
+  <div class="card">
+    <h3>Bulk Assignments</h3>
+    <p>{{ total_assignments }}</p>
+  </div>
+  <div class="card">
+    <h3>Student Fee Records</h3>
+    <p>{{ total_records }}</p>
+  </div>
+</div>
+{% endblock %}

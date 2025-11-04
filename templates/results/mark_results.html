@@ -1,0 +1,155 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Mark Results{% endblock %}
+
+{% block content %}
+
+<style>
+.page-title { font-size: 1.6rem; font-weight: 600; margin-bottom: 1rem; color: #1a237e; }
+.filter-form, .upload-form { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem; }
+.filter-form select, .upload-form select, .upload-form input, .filter-form button, .upload-form button {
+  padding: 0.6rem 1rem; font-size: 0.95rem; border-radius: 8px; border: 1px solid #ccc;
+}
+.btn { cursor: pointer; border: none; font-weight: 600; border-radius: 8px; padding: 0.6rem 1.2rem;
+  font-size: 0.95rem; text-transform: uppercase; transition: all 0.3s ease-in-out;
+}
+.btn-primary { background: linear-gradient(135deg, #3949ab, #5c6bc0); color: white; }
+.btn-primary:hover { background: linear-gradient(135deg, #283593, #3949ab); transform: translateY(-2px); }
+.btn-success { background: linear-gradient(135deg, #2e7d32, #4caf50); color: white; }
+.btn-success:hover { background: linear-gradient(135deg, #1b5e20, #2e7d32); transform: translateY(-2px); }
+
+.styled-table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;
+}
+.styled-table th, .styled-table td { text-align: center; padding: 10px; }
+.styled-table th { background: #1e88e5; color: white; font-weight: 600; }
+.styled-table tr:nth-child(even) { background: #f9f9f9; }
+
+.score-input { width: 80px; padding: 5px; border-radius: 6px; border: 1px solid #bbb; text-align: center; }
+.no-data { text-align: center; color: #888; font-style: italic; margin-top: 1.5rem; }
+.form-actions { text-align: right; margin-top: 1.5rem; }
+</style>
+
+<h2 class="page-title">🧮 Mark Student Results</h2>
+
+<!-- 🔹 Filter Section -->
+<form method="GET" class="filter-form">
+  <select name="session" required>
+    <option value="">Select Session</option>
+    {% for s in sessions %}
+      <option value="{{ s.id }}" {% if s.id|stringformat:'s' == selected_session %}selected{% endif %}>{{ s.name }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="term" required>
+    <option value="">Select Term</option>
+    <option value="1st" {% if selected_term == "1st" %}selected{% endif %}>1st Term</option>
+    <option value="2nd" {% if selected_term == "2nd" %}selected{% endif %}>2nd Term</option>
+    <option value="3rd" {% if selected_term == "3rd" %}selected{% endif %}>3rd Term</option>
+  </select>
+
+  <select name="subject" required>
+    <option value="">Select Subject</option>
+    {% for sub in subjects %}
+      <option value="{{ sub.id }}" {% if selected_subject and sub.id == selected_subject.id %}selected{% endif %}>
+        {{ sub.name }} ({{ sub.classroom.name }})
+      </option>
+    {% endfor %}
+  </select>
+
+  <button type="submit" class="btn btn-primary">Load Students</button>
+</form>
+
+<!-- 🔹 Upload Section -->
+<form method="POST" enctype="multipart/form-data" class="upload-form" action="{% url 'upload_results' %}">
+  {% csrf_token %}
+  <select name="session" required>
+    <option value="">Select Session</option>
+    {% for s in sessions %}
+      <option value="{{ s.id }}" {% if selected_session and s.id|stringformat:'s' == selected_session %}selected{% endif %}>{{ s.name }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="term" required>
+    <option value="">Select Term</option>
+    <option value="1st" {% if selected_term == "1st" %}selected{% endif %}>1st Term</option>
+    <option value="2nd" {% if selected_term == "2nd" %}selected{% endif %}>2nd Term</option>
+    <option value="3rd" {% if selected_term == "3rd" %}selected{% endif %}>3rd Term</option>
+  </select>
+
+  <select name="subject" required>
+    <option value="">Select Subject</option>
+    {% for sub in subjects %}
+      <option value="{{ sub.id }}" {% if selected_subject and sub.id == selected_subject.id %}selected{% endif %}>
+        {{ sub.name }} ({{ sub.classroom.name }})
+      </option>
+    {% endfor %}
+  </select>
+
+  <input type="file" name="file" accept=".csv" required>
+  <button type="submit" class="btn btn-success">Upload Results</button>
+
+  {% if selected_subject %}
+  <a href="{% url 'download_results_template' %}?session={{ selected_session }}&subject={{ selected_subject.id }}" class="btn btn-primary">
+    📥 Download Template
+  </a>
+  {% endif %}
+</form>
+
+<!-- 🔹 Result Table (only show when session + term + subject selected) -->
+{% if selected_session and selected_term and selected_subject %}
+  {% if combined %}
+    <hr>
+    <h3 class="section-title">📘 {{ selected_subject.name }} | {{ selected_term }} Term | {{ combined|length }} Students</h3>
+
+    <form method="POST">
+      {% csrf_token %}
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student ID</th>
+            <th>Test (40)</th>
+            <th>Exam (60)</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for student, result in combined %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ student.student_id }}</td>
+            <td>
+              <input type="number" name="test_{{ student.id }}" min="0" max="40"
+                     value="{{ result.test_score|default_if_none:'' }}" class="score-input">
+            </td>
+            <td>
+              <input type="number" name="exam_{{ student.id }}" min="0" max="60"
+                     value="{{ result.exam_score|default_if_none:'' }}" class="score-input">
+            </td>
+            <td class="total-cell">
+              {% if result.test_score is not None and result.exam_score is not None %}
+                {{ result.test_score|add:result.exam_score }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success">💾 Save Results</button>
+      </div>
+    </form>
+
+  {% else %}
+    <p class="no-data">No results found for {{ selected_subject.name }} in {{ selected_term }} term ({{ selected_session_name }}).</p>
+  {% endif %}
+{% else %}
+  <p class="no-data">Please select a session, term, and subject to begin marking results.</p>
+{% endif %}
+
+{% endblock %}

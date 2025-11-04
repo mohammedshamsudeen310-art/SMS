@@ -1,0 +1,120 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}{{ action }}{% endblock %}
+
+{% block content %}
+<style>
+  .subject-form-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  .subject-form-container h2 {
+    text-align: center;
+    color: #2b3a67;
+    margin-bottom: 20px;
+  }
+
+  .subject-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .subject-form label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .subject-form input,
+  .subject-form select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+
+  .subject-form input:focus,
+  .subject-form select:focus {
+    border-color: #2b7de9;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+
+  .btn-primary {
+    background: #2b7de9;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: #1e63c8;
+  }
+
+  .btn-secondary {
+    background: #777;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: background 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background: #555;
+  }
+</style>
+
+<div class="subject-form-container">
+  <h2>{{ action }}</h2>
+
+  <form method="POST" class="subject-form">
+    {% csrf_token %}
+
+    <label>Subject Name:</label>
+    <input type="text" name="name" value="{{ subject.name|default:'' }}" required>
+
+    <label>Code:</label>
+    <input type="text" name="code" value="{{ subject.code|default:'' }}" required>
+
+    <label>Classroom:</label>
+    <select name="classroom" required>
+      {% for cls in classes %}
+      <option value="{{ cls.id }}" {% if subject.classroom.id == cls.id %}selected{% endif %}>
+        {{ cls.name }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Teacher (optional):</label>
+    <select name="teacher">
+      <option value="">-- None --</option>
+      {% for teacher in teachers %}
+      <option value="{{ teacher.id }}" {% if subject.teacher.id == teacher.id %}selected{% endif %}>
+        {{ teacher.get_full_name }} ({{ teacher.username }})
+      </option>
+      {% endfor %}
+    </select>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">💾 Save</button>
+      <a href="{% url 'subject_list' %}" class="btn-secondary">⬅ Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

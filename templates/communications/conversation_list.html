@@ -1,0 +1,120 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}💬 Conversations{% endblock %}
+
+{% block content %}
+<style>
+/* === STYLING === */
+.chat-page { display: flex; flex-direction: column; gap: 1.5rem; }
+.chat-header {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #fff; padding: 1rem 1.5rem; border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.chat-header h1 { font-size: 1.4rem; color: #1e293b; margin: 0; }
+.chat-header a {
+  background: #2563eb; color: #fff; padding: 0.5rem 1rem;
+  border-radius: 8px; text-decoration: none; font-weight: 500;
+  transition: background 0.2s ease;
+}
+.chat-header a:hover { background: #1e40af; }
+
+.chat-controls {
+  background: #fff; padding: 1rem 1.5rem; border-radius: 12px;
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.chat-controls input,
+.chat-controls select {
+  flex: 1; padding: 0.6rem 1rem; border: 1px solid #cbd5e0;
+  border-radius: 8px; font-size: 0.95rem;
+}
+.chat-controls button {
+  background: #16a34a; color: #fff; border: none;
+  padding: 0.6rem 1.2rem; border-radius: 8px;
+  cursor: pointer; font-weight: 500;
+}
+.chat-controls button:hover { background: #15803d; }
+
+.conversation-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.conversation-card {
+  background: #fff; border-radius: 12px; padding: 1rem 1.2rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.conversation-card:hover {
+  transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+.conversation-card a {
+  text-decoration: none; color: #1e3a8a;
+  font-weight: 600; font-size: 1.05rem;
+}
+.conversation-card small {
+  display: block; color: #64748b;
+  margin-top: 0.3rem; font-size: 0.85rem;
+}
+.empty-message {
+  text-align: center; padding: 2rem; color: #6b7280;
+  background: #fff; border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+</style>
+
+<div class="chat-page">
+  <!-- 🔹 Header -->
+  <div class="chat-header">
+    <h1>💬 Your Conversations</h1>
+    <a href="{% url 'create_conversation' %}">+ Start New Chat</a>
+  </div>
+
+  <!-- 🔹 Search and Filters -->
+  <form id="chatSearchForm" class="chat-controls">
+    <input type="text" name="q" id="searchInput" placeholder="Search by name or participant...">
+    <select name="filter" id="filterSelect">
+      <option value="">All</option>
+      <option value="recent">Most Recent</option>
+      <option value="active">Active</option>
+    </select>
+    <button type="submit">Search</button>
+  </form>
+
+  <!-- 🔹 Conversation List -->
+  <div id="conversationContainer">
+    {% include 'communications/conversation_list_partial.html' %}
+  </div>
+</div>
+
+<!-- ✅ AJAX Script -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('chatSearchForm');
+  const container = document.getElementById('conversationContainer');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    updateConversations();
+  });
+
+  // 🔹 Trigger search as you type
+  document.getElementById('searchInput').addEventListener('keyup', () => {
+    clearTimeout(window.searchTimer);
+    window.searchTimer = setTimeout(updateConversations, 400);
+  });
+
+  // 🔹 Fetch updated results
+  function updateConversations() {
+    const params = new URLSearchParams(new FormData(form));
+    fetch(`{% url 'conversation_list_ajax' %}?${params}`)
+      .then(response => response.text())
+      .then(html => {
+        container.innerHTML = html;
+      })
+      .catch(err => console.error("Error:", err));
+  }
+});
+</script>
+{% endblock %}

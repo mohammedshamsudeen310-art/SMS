@@ -1,0 +1,83 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+{% block title %}Edit Profile{% endblock %}
+{% block header %}✏️ Edit Profile{% endblock %}
+{% block content %}
+<style>
+.edit-container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 30px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+}
+.edit-section {
+  margin-bottom: 2rem;
+}
+form label {
+  font-weight: 600;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+button {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover {
+  background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+}
+h3 {
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+.success, .error {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.success { background: #dcfce7; color: #166534; }
+.error { background: #fee2e2; color: #991b1b; }
+</style>
+
+<div class="edit-container">
+  {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}success{% else %}error{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+
+  <!-- Profile Update -->
+  <div class="edit-section">
+    <h3>🧑‍🎓 Update Profile Information</h3>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ email_form.as_p }}
+      {{ profile_form.as_p }}
+      <button type="submit" name="update_profile">💾 Save Changes</button>
+    </form>
+  </div>
+
+  <hr>
+
+  <!-- Password Change -->
+  <div class="edit-section">
+    <h3>🔒 Change Password</h3>
+    <form method="POST">
+      {% csrf_token %}
+      {{ password_form.as_p }}
+      <button type="submit" name="change_password">🔁 Update Password</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

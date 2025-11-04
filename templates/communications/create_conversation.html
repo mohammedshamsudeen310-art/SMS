@@ -1,0 +1,167 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+{% block title %}Start New Conversation{% endblock %}
+
+{% block content %}
+<style>
+/* ===== STYLING ===== */
+.new-conversation {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  max-width: 700px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.new-conversation h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+}
+.new-conversation label {
+  font-weight: 500;
+  color: #1f2937;
+}
+.new-conversation input[type="text"] {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+.participant-search {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.participant-search input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.participant-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #f9fafb;
+}
+.participant-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.2rem;
+}
+.participant-item:hover {
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+.participant-item input[type="checkbox"] {
+  accent-color: #2563eb;
+  width: 18px;
+  height: 18px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+button {
+  padding: 0.7rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+button[type="submit"] {
+  background: #2563eb;
+  border: none;
+  color: #fff;
+}
+button[type="submit"]:hover {
+  background: #1e40af;
+}
+.select-all {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+</style>
+
+<div class="new-conversation">
+  <h2>🗨️ Start a New Conversation</h2>
+  <form method="post">
+    {% csrf_token %}
+    <!-- Conversation Name -->
+    <label>
+      Conversation Name (optional)
+      <input type="text" name="name" placeholder="e.g. Parent-Teacher Discussion">
+    </label>
+
+    <!-- Participant Search -->
+    <div class="participant-search">
+      <input type="text" id="searchUser" placeholder="🔍 Search for users by name or role...">
+      <div class="select-all">
+        <input type="checkbox" id="selectAll"> <label for="selectAll">Select All</label>
+      </div>
+    </div>
+
+    <!-- Participant List -->
+    <div id="userList" class="participant-list">
+      {% for u in users %}
+        <div class="participant-item" data-name="{{ u.get_full_name|default:u.username }}" data-role="{{ u.role }}">
+          <input type="checkbox" name="participants" value="{{ u.pk }}" id="user-{{ u.pk }}">
+          <label for="user-{{ u.pk }}">
+            {{ u.get_full_name|default:u.username }} <small>({{ u.role|title }})</small>
+          </label>
+        </div>
+      {% empty %}
+        <p>No users available.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button type="submit">Create Conversation</button>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('searchUser');
+  const userList = document.getElementById('userList');
+  const selectAllCheckbox = document.getElementById('selectAll');
+
+  // 🔹 Search filter
+  searchInput.addEventListener('keyup', () => {
+    const term = searchInput.value.toLowerCase();
+    document.querySelectorAll('.participant-item').forEach(item => {
+      const name = item.dataset.name.toLowerCase();
+      const role = item.dataset.role.toLowerCase();
+      item.style.display = (name.includes(term) || role.includes(term)) ? 'flex' : 'none';
+    });
+  });
+
+  // 🔹 Select all toggle
+  selectAllCheckbox.addEventListener('change', e => {
+    const checked = e.target.checked;
+    document.querySelectorAll('.participant-item input[type="checkbox"]').forEach(cb => {
+      cb.checked = checked;
+    });
+  });
+});
+</script>
+{% endblock %}

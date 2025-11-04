@@ -1,0 +1,98 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}🧮 Bulk Fee Creation{% endblock %}
+{% block header %}🧾 Create Fee Records for All Students{% endblock %}
+
+{% block content %}
+<style>
+/* 🔹 Page Container */
+.bulk-fee-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  padding: 30px 35px;
+  transition: 0.3s ease;
+}
+.bulk-fee-container:hover {
+  transform: translateY(-3px);
+}
+
+/* 🔹 Heading */
+.bulk-fee-container h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #004aad;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+/* 🔹 Form Styles */
+.bulk-fee-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.bulk-fee-container label {
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.bulk-fee-container select,
+.bulk-fee-container input[type="text"],
+.bulk-fee-container input[type="number"],
+.bulk-fee-container input[type="decimal"],
+.bulk-fee-container input[type="email"],
+.bulk-fee-container input[type="password"],
+.bulk-fee-container input[type="file"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.6px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+.bulk-fee-container select:focus,
+.bulk-fee-container input:focus {
+  border-color: #004aad;
+  outline: none;
+}
+
+/* 🔹 Submit Button */
+.btn-primary {
+  background: #004aad;
+  color: #fff;
+  font-weight: 600;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.btn-primary:hover {
+  background: #003a8c;
+  transform: translateY(-2px);
+}
+
+/* 🔹 Responsive */
+@media (max-width: 480px) {
+  .bulk-fee-container {
+    padding: 20px;
+  }
+  .bulk-fee-container h2 {
+    font-size: 1.3rem;
+  }
+}
+</style>
+
+<div class="bulk-fee-container">
+  <h2>🧮 Create Fee Records for All Students</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn-primary">Generate Records</button>
+  </form>
+</div>
+{% endblock %}

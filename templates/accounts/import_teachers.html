@@ -1,0 +1,60 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Import Teachers{% endblock %}
+{% block header %}📥 Import Teachers{% endblock %}
+
+{% block content %}
+<style>
+.upload-container {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 600px;
+  margin: 30px auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+input[type="file"] {
+  display: block;
+  margin: 20px auto;
+  border: 2px dashed #cbd5e0;
+  padding: 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+input[type="file"]:hover {
+  border-color: #3182ce;
+}
+
+button {
+  background: #2b6cb0;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #1a4f8a;
+}
+</style>
+
+<div class="upload-container">
+  <h2>Import Teachers from CSV</h2>
+  <p>Upload a CSV file containing <strong>full_name, email, subject</strong> columns.</p>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" accept=".csv" required>
+    <button type="submit">📥 Import</button>
+  </form>
+  <p style="margin-top:1rem;color:#666;">Example CSV:</p>
+  <pre style="background:#f7fafc;padding:10px;border-radius:8px;">full_name,email,subject
+John Doe,john@example.com,Mathematics
+Jane Smith,jane@example.com,English</pre>
+</div>
+{% endblock %}

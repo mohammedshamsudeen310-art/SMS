@@ -1,0 +1,53 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Delete Teacher{% endblock %}
+{% block header %}🗑️ Delete Teacher{% endblock %}
+
+{% block content %}
+<style>
+.confirm-box {
+  background: #fff;
+  padding: 24px;
+  max-width: 500px;
+  margin: auto;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.confirm-box h3 {
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+.confirm-box p {
+  color: #718096;
+  margin-bottom: 1.5rem;
+}
+.confirm-box button {
+  margin: 0 10px;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-confirm {
+  background: #e53e3e;
+  color: white;
+}
+.btn-cancel {
+  background: #a0aec0;
+  color: white;
+}
+.btn-confirm:hover { background: #c53030; }
+.btn-cancel:hover { background: #718096; }
+</style>
+
+<div class="confirm-box">
+  <h3>Are you sure you want to delete {{ teacher.user.get_full_name }}?</h3>
+  <p>This action cannot be undone.</p>
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn-confirm">Yes, Delete</button>
+    <a href="{% url 'manage_teachers' %}" class="btn-cancel">Cancel</a>
+  </form>
+</div>
+{% endblock %}

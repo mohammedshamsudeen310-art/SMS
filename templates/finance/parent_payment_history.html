@@ -1,0 +1,251 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}💰 Payment History{% endblock %}
+
+{% block content %}
+<style>
+.page-title {
+  font-size: 1.6rem;
+  color: #1e3a8a;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.export-buttons {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-export {
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.btn-export:hover {
+  background-color: #1d4ed8;
+}
+
+.table-container {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.styled-table th {
+  background: #1e3a8a;
+  color: white;
+  text-align: left;
+  padding: 0.8rem;
+}
+
+.styled-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.styled-table tr:nth-child(even) { background: #f9fafb; }
+.styled-table tr:hover { background: #f3f4f6; }
+
+.no-data {
+  color: #9ca3af;
+  font-style: italic;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.summary-card {
+  margin-top: 1.5rem;
+  background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 2.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  margin-top: 2rem;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .summary-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-title {
+  font-size: 1.2rem;
+  color: #1e3a8a;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  border-left: 4px solid #1e3a8a;
+  padding-left: 0.5rem;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.summary-table th {
+  background: #1e3a8a;
+  color: white;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+
+.summary-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-table tr:nth-child(even) { background: #f9fafb; }
+.summary-table tr:hover { background: #f1f5f9; }
+
+.amount {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.overall-summary-card {
+  margin: 2rem auto;
+  background: linear-gradient(145deg, #f8fafc, #e0e7ff);
+  border-radius: 16px;
+  padding: 1.8rem 2rem;
+  max-width: 420px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.summary-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.summary-item {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  transition: background-color 0.3s ease;
+}
+
+.summary-item:hover {
+  background-color: #f9fafb;
+}
+
+.summary-label {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin-bottom: 0.3rem;
+}
+
+.summary-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+
+</style>
+
+<h2 class="page-title">💰 Payment History</h2>
+
+{% if payments %}
+<div class="export-buttons">
+  <a href="{% url 'export_payment_history_excel' %}" class="btn-export">⬇️ Download Excel</a>
+  <a href="{% url 'export_payment_history_pdf' %}" class="btn-export">🧾 Download PDF</a>
+</div>
+
+<div class="table-container">
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Child</th>
+        <th>Amount (₵)</th>
+        <th>Method</th>
+        <th>Reference</th>
+        <th>Date Paid</th>
+        <th>Received By</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for payment in payments %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ payment.student_fee.student.user.get_full_name }}</td>
+        <td>{{ payment.amount }}</td>
+        <td>{{ payment.get_payment_method_display }}</td>
+        <td>{{ payment.reference }}</td>
+        <td>{{ payment.date_paid|date:"M d, Y - h:i A" }}</td>
+        <td>{{ payment.received_by.get_full_name|default:"N/A" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <p class="no-data">No payment history found for your children yet.</p>
+{% endif %}
+    <div class="summary-card">
+    <div>
+        <h3 style="font-weight:600; color:#1e3a8a;">🧾 Summary by Child</h3>
+        <table class="styled-table" style="margin-top:0.5rem;">
+        <thead>
+            <tr>
+            <th>Child</th>
+            <th>Total Paid (₵)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for child in child_totals %}
+            <tr>
+            <td>{{ child.student_fee__student__user__first_name }} {{ child.student_fee__student__user__last_name }}</td>
+            <td>₵{{ child.total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+
+    <div style="text-align:center; margin-top:1rem;">
+        <h3 style="font-weight:600; color:#1e3a8a;">💰 Overall Summary</h3><br>
+        <p style=>Total Payments Made: <strong>{{ payments.count }}</strong></p>
+        <p>Total Amount Paid: <strong>₵{{ total_amount_paid|floatformat:2 }}</strong></p>
+    </div>
+    </div>
+
+{% endblock %}

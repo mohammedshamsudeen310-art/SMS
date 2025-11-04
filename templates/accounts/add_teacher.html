@@ -1,0 +1,131 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Add Teacher{% endblock %}
+{% block header %}➕ Add Teacher{% endblock %}
+
+{% block content %}
+<style>
+/* 🎨 ===== Add Teacher Form Styling ===== */
+
+.form-container {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  max-width: 720px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.form-container h2 {
+  text-align: center;
+  color: #2d3748;
+  margin-bottom: 1.8rem;
+  font-weight: 700;
+}
+
+/* 🧩 Form Fields */
+form p {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #cbd5e0;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.25s ease;
+  font-size: 0.95rem;
+  background: #f9fafb;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+  background: #fff;
+}
+
+/* 💾 Action Buttons */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  padding: 0.8rem 1.4rem;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease-in-out;
+}
+
+.btn.save {
+  background: #38a169;
+}
+
+.btn.save:hover {
+  background: #2f855a;
+}
+
+.btn.cancel {
+  background: #e53e3e;
+}
+
+.btn.cancel:hover {
+  background: #c53030;
+}
+
+/* 🌀 Subtle animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+  .form-container {
+    padding: 1.5rem;
+  }
+  .form-actions {
+    flex-direction: column;
+  }
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+</style>
+
+<div class="form-container">
+  <h2>➕ Add New Teacher</h2>
+  <form method="POST">
+    {% csrf_token %}
+    {{ user_form.as_p }}
+    {{ teacher_form.as_p }}
+
+    <div class="form-actions">
+      <button type="submit" class="btn save">💾 Save</button>
+      <a href="{% url 'manage_teachers' %}" class="btn cancel">❌ Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

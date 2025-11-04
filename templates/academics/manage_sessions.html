@@ -1,0 +1,174 @@
+{% extends "accounts/base_dashboard.html" %}
+{% load static %}
+{% block title %}Manage Academic Sessions{% endblock %}
+
+{% block content %}
+<style>
+/* 🎓 Page Title */
+.page-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1.2rem;
+  border-left: 5px solid #2563eb;
+  padding-left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ➕ Add Button */
+.btn-primary {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+.btn-primary:hover {
+  background: linear-gradient(90deg, #1e40af, #1d4ed8);
+  transform: translateY(-2px);
+}
+
+/* 📊 Table Styling */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+  font-size: 0.95rem;
+}
+
+.styled-table thead {
+  background: #2563eb;
+  color: #ffffff;
+  text-align: left;
+}
+.styled-table thead th {
+  padding: 12px 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.styled-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.2s ease;
+}
+.styled-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.styled-table td {
+  padding: 12px 15px;
+  color: #334155;
+}
+
+/* 🧩 Action Buttons */
+.btn-edit, .btn-delete {
+  display: inline-block;
+  padding: 7px 12px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.btn-edit {
+  background: #e0f2fe;
+  color: #0369a1;
+  margin-right: 5px;
+}
+.btn-edit:hover {
+  background: #bae6fd;
+  transform: translateY(-2px);
+}
+
+.btn-delete {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.btn-delete:hover {
+  background: #fecaca;
+  transform: translateY(-2px);
+}
+
+/* ❌ Empty State */
+.styled-table td[colspan="5"] {
+  text-align: center;
+  color: #64748b;
+  padding: 1.2rem;
+}
+
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  .styled-table thead {
+    display: none;
+  }
+  .styled-table, .styled-table tbody, .styled-table tr, .styled-table td {
+    display: block;
+    width: 100%;
+  }
+  .styled-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .styled-table td {
+    padding: 10px;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+  }
+  .styled-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #475569;
+  }
+}
+</style>
+
+<h2 class="page-title">📘 Manage Academic Sessions</h2>
+
+<a href="{% url 'add_session' %}" class="btn-primary">➕ Add New Session</a>
+
+<table class="styled-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Current</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in sessions %}
+    <tr>
+      <td data-label="Name">{{ s.name }}</td>
+      <td data-label="Start">{{ s.start_date }}</td>
+      <td data-label="End">{{ s.end_date }}</td>
+      <td data-label="Current">{% if s.is_current %}✅{% else %}❌{% endif %}</td>
+      <td data-label="Actions">
+        <a href="{% url 'edit_session' s.id %}" class="btn-edit">✏️ Edit</a>
+        <a href="{% url 'delete_session' s.id %}" class="btn-delete" onclick="return confirm('Delete this session?')">🗑️ Delete</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">No sessions found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

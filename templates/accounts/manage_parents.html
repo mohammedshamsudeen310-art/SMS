@@ -1,0 +1,92 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Manage Parents{% endblock %}
+
+{% block content %}
+<style>
+.table-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  margin-top: 1.5rem;
+}
+.table-container h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-container th, .table-container td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+.table-container tr:hover {
+  background-color: #f9f9f9;
+}
+.action-btns a {
+  margin-right: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.btn-add {
+  display: inline-block;
+  background: #2b77e5;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+}
+</style>
+
+<div class="table-container">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2>👨‍👩‍👧 Manage Parents</h2>
+    <a href="{% url 'add_parent' %}" class="btn-add">➕ Add Parent</a>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Photo</th>
+        <th>Parent Name</th>
+        <th>Occupation</th>
+        <th>Relationship</th>
+        <th>Children</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for parent in parents %}
+      <tr>
+        <td>
+          {% if parent.photo %}
+          <img src="{{ parent.photo.url }}" alt="Photo" style="width:40px; height:40px; border-radius:50%;">
+          {% else %}
+          —
+          {% endif %}
+        </td>
+        <td>{{ parent.user.get_full_name|default:parent.user.username }}</td>
+        <td>{{ parent.occupation }}</td>
+        <td>{{ parent.relationship }}</td>
+        <td>
+          {% for child in parent.children.all %}
+            {{ child.user.get_full_name|default:child.user.username }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+            <span style="color:#888;">No children assigned</span>
+          {% endfor %}
+        </td>
+        <td class="action-btns">
+          <a href="{% url 'edit_parent' parent.pk %}" style="color:#1e88e5;">✏️ Edit</a>
+          <a href="{% url 'delete_parent' parent.pk %}" style="color:#e53935;" onclick="return confirm('Are you sure you want to delete this parent?');">🗑️ Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center; color:#777;">No parents found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
