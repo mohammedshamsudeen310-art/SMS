@@ -21,7 +21,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 # ⚙️ Installed Apps
 # -----------------------------------------
 INSTALLED_APPS = [
-    'jazzmin',
+    # 'django-jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

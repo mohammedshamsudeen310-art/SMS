@@ -116,13 +116,6 @@ class Parent(BaseProfile):
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.relationship})"
 
-class ClassRoom(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    level = models.PositiveIntegerField(default=1)
-    description = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
 
 # ============================================================
 # 3️⃣ Student Profile with Auto-generated Student ID
