@@ -82,13 +82,19 @@ WSGI_APPLICATION = 'SMS.wsgi.application'
 # -----------------------------------------
 # 🗃️ Database Configuration
 # -----------------------------------------
+# -----------------------------------------
+# 🗃️ Database Configuration (Auto Switch)
+# -----------------------------------------
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if DATABASE_URL:
+if DATABASE_URL and "render.com" in DATABASE_URL:
+    # Use Render PostgreSQL in production
     DATABASES = {
-        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
+    # Use SQLite for local development
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
