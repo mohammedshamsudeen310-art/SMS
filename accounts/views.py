@@ -24,6 +24,20 @@ from .forms import TeacherProfileForm, UserForm, StudentForm, ParentProfileForm
 User = get_user_model()
 
 
+
+
+from django.core.management import call_command
+from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def import_backup(request):
+    try:
+        call_command('loaddata', 'backup.json')
+        return HttpResponse("✅ Data import completed successfully!")
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {e}")
+
 # ==========================================
 # 1️⃣ AUTHENTICATION
 # ==========================================
