@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='studentfeerecord',
             name='student',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.student'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.Student'),
         ),
     ]
