@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academics', '0001_initial'),
+        ('accounts', '0001_initial'),
         ('finance', '0001_initial'),
     ]
 
@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='studentfeerecord',
             name='student',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academics.studentprofile'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.student'),
         ),
     ]
