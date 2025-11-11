@@ -4,6 +4,7 @@
 
 {% block content %}
 <style>
+/* ==== Base Section ==== */
 .page-section {
   background: #0f172a;
   color: #f1f5f9;
@@ -11,7 +12,11 @@
   padding: 2rem;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   animation: fadeIn 0.4s ease-in-out;
+  overflow-x: auto; /* horizontal scroll if needed */
+  -webkit-overflow-scrolling: touch;
 }
+
+/* ==== Headings ==== */
 .page-section h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -19,32 +24,44 @@
   margin-bottom: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
 }
+
+/* ==== Top Bar ==== */
 .promotion-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
 }
+
+/* ==== Search Input ==== */
 .search-box {
   flex: 1;
+  min-width: 180px;
   position: relative;
 }
+
 .search-box input {
   width: 100%;
-  padding: 0.7rem 1rem;
+  padding: 0.8rem 1rem;
   border: 1px solid #334155;
   border-radius: 0.5rem;
   background: #1e293b;
   color: #e2e8f0;
+  font-size: 0.95rem;
 }
+
 .search-box input:focus {
   border-color: #38bdf8;
   outline: none;
 }
+
+/* ==== Buttons ==== */
 button {
-  padding: 0.7rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   border: none;
   border-radius: 0.5rem;
   background: linear-gradient(90deg,#38bdf8,#2563eb);
@@ -52,39 +69,91 @@ button {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.3s;
+  white-space: nowrap;
 }
+
 button:hover {
   transform: scale(1.03);
   box-shadow: 0 0 15px #38bdf8aa;
 }
+
 button.danger-btn {
   background: linear-gradient(90deg,#ef4444,#b91c1c);
 }
+
+/* ==== Table Wrapper ==== */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==== Table ==== */
 .data-table {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
   background: #1e293b;
   border-radius: 0.75rem;
   overflow: hidden;
 }
+
 .data-table thead {
   background: #334155;
   color: #f1f5f9;
   text-transform: uppercase;
 }
+
 .data-table th, .data-table td {
   padding: 0.9rem 1rem;
   border-bottom: 1px solid #334155;
   font-size: 0.95rem;
 }
+
 .data-table tbody tr:hover {
   background: #0f172a;
 }
+
 .data-table input[type="checkbox"] {
   width: 1.1rem;
   height: 1.1rem;
   cursor: pointer;
 }
+
+/* ==== Responsive Design ==== */
+@media (max-width: 1024px) {
+  .page-section {
+    padding: 1.5rem;
+  }
+  .promotion-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .promotion-bar button {
+    width: 100%;
+    text-align: center;
+  }
+  .search-box {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-section {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+  .page-section h2 {
+    font-size: 1.2rem;
+  }
+  .data-table th, .data-table td {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* ==== Animation ==== */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -104,40 +173,44 @@ button.danger-btn {
       <button type="submit" name="action" value="demote" class="danger-btn">⬇️ Demote Selected</button>
     </div>
 
-    <table class="data-table" id="studentTable">
-      <thead>
-        <tr>
-          <th><input type="checkbox" id="select-all"></th>
-          <th>#</th>
-          <th>Student ID</th>
-          <th>Full Name</th>
-          <th>Current Class</th>
-          <th>Section</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for student in students %}
-        <tr>
-          <td><input type="checkbox" name="selected_students" value="{{ student.id }}"></td>
-          <td>{{ forloop.counter }}</td>
-          <td>{{ student.student_id }}</td>
-          <td>{{ student.user.get_full_name }}</td>
-          <td>{{ student.current_class }}</td>
-          <td>{{ student.section }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6" style="text-align:center;color:#94a3b8;">No students found.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="data-table" id="studentTable">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="select-all"></th>
+            <th>#</th>
+            <th>Student ID</th>
+            <th>Full Name</th>
+            <th>Current Class</th>
+            <th>Section</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students %}
+          <tr>
+            <td><input type="checkbox" name="selected_students" value="{{ student.id }}"></td>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ student.student_id }}</td>
+            <td>{{ student.user.get_full_name }}</td>
+            <td>{{ student.current_class }}</td>
+            <td>{{ student.section }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="text-align:center;color:#94a3b8;">No students found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </form>
 </div>
 
 <script>
+/* Select/Deselect All */
 document.getElementById("select-all").addEventListener("change", function(e) {
   document.querySelectorAll("input[name='selected_students']").forEach(cb => cb.checked = e.target.checked);
 });
 
+/* Search Filter */
 document.getElementById("searchInput").addEventListener("keyup", function() {
   const filter = this.value.toLowerCase();
   document.querySelectorAll("#studentTable tbody tr").forEach(row => {
