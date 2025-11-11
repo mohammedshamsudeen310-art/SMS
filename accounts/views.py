@@ -391,17 +391,51 @@ def add_parent(request):
 
 # ✅ Edit parent
 @login_required
+@transaction.atomic
 def edit_parent(request, pk):
     parent = get_object_or_404(Parent, pk=pk)
+    user = parent.user  # linked User object
+
     if request.method == 'POST':
         form = ParentProfileForm(request.POST, request.FILES, instance=parent)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Parent updated successfully!")
+            # --- Update User fields ---
+            username = form.cleaned_data.get('username', user.username)
+            email = form.cleaned_data.get('email', user.email)
+            full_name = form.cleaned_data.get('fullname', f"{user.first_name} {user.last_name}")
+
+            # Safely split full name
+            parts = full_name.split()
+            user.first_name = parts[0] if parts else user.first_name
+            user.last_name = " ".join(parts[1:]) if len(parts) > 1 else user.last_name
+            user.username = username
+            user.email = email
+            user.save()
+
+            # --- Save Parent profile (keep children selection etc.) ---
+            parent = form.save(commit=False)
+            parent.user = user
+            parent.save()
+            form.save_m2m()
+
+            messages.success(request, f"✅ Parent '{full_name}' updated successfully!")
             return redirect('manage_parents')
+        else:
+            messages.error(request, "⚠️ Please fix the errors below.")
     else:
-        form = ParentProfileForm(instance=parent)
-    return render(request, 'accounts/parent_form.html', {'form': form, 'title': 'Edit Parent'})
+        # Prefill form with combined data
+        initial_data = {
+            'username': user.username,
+            'email': user.email,
+            'fullname': f"{user.first_name} {user.last_name}".strip(),
+        }
+        form = ParentProfileForm(instance=parent, initial=initial_data)
+
+    return render(request, 'accounts/parent_form.html', {
+        'form': form,
+        'title': 'Edit Parent',
+        'editing': True,
+    })
 
 # ✅ Delete parent
 

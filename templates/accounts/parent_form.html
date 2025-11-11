@@ -7,7 +7,11 @@
 <div class="dashboard-container">
   <div class="form-card animate-fadein">
     <h2 class="form-title">{{ title }}</h2>
-    <p class="form-subtitle">Fill in the required details below to register a new parent profile.</p>
+    {% if editing %}
+      <p class="form-subtitle">Update the parent information below. All fields remain prefilled.</p>
+    {% else %}
+      <p class="form-subtitle">Fill in the required details below to register a new parent profile.</p>
+    {% endif %}
 
     <form method="POST" enctype="multipart/form-data" class="styled-form">
       {% csrf_token %}
@@ -20,7 +24,6 @@
               {{ message|linebreaksbr }}
             </div>
 
-            <!-- ✅ Optional Login Info Display -->
             {% if "added successfully" in message %}
               <div class="login-info-box">
                 <h4>👤 Parent Account Created</h4>
@@ -35,61 +38,64 @@
 
       <!-- 🔹 Grid Layout -->
       <div class="form-grid">
-        <!-- Username -->
         <div class="form-group">
           <label for="id_username">Username</label>
-          <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter username" required>
+          <input type="text" name="username" id="id_username" class="form-control"
+                 placeholder="Enter username"
+                 value="{{ form.username.value|default_if_none:'' }}"
+                 required>
         </div>
 
-        <!-- Email -->
         <div class="form-group">
           <label for="id_email">Email</label>
-          <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter email address">
+          <input type="email" name="email" id="id_email" class="form-control"
+                 placeholder="Enter email address"
+                 value="{{ form.email.value|default_if_none:'' }}">
         </div>
 
-        <!-- Full Name -->
         <div class="form-group full-width">
           <label for="id_fullname">Full Name</label>
-          <input type="text" name="fullname" id="id_fullname" class="form-control" placeholder="Enter full name">
+          <input type="text" name="fullname" id="id_fullname" class="form-control"
+                 placeholder="Enter full name"
+                 value="{{ form.fullname.value|default_if_none:'' }}">
         </div>
 
-        <!-- Date of Birth -->
         <div class="form-group">
           <label for="id_date_of_birth">Date of Birth</label>
           {{ form.date_of_birth }}
         </div>
 
-        <!-- Gender -->
         <div class="form-group">
           <label for="id_gender">Gender</label>
           {{ form.gender }}
         </div>
 
-        <!-- Address -->
         <div class="form-group full-width">
           <label for="id_address">Address</label>
           {{ form.address }}
         </div>
 
-        <!-- Photo -->
         <div class="form-group">
           <label for="id_photo">Photo</label>
           {{ form.photo }}
+          {% if form.instance.photo %}
+            <div class="current-photo">
+              <small>Current:</small><br>
+              <img src="{{ form.instance.photo.url }}" alt="Parent photo" height="80" style="border-radius:8px;margin-top:6px;">
+            </div>
+          {% endif %}
         </div>
 
-        <!-- Occupation -->
         <div class="form-group">
           <label for="id_occupation">Occupation</label>
           {{ form.occupation }}
         </div>
 
-        <!-- Relationship -->
         <div class="form-group">
           <label for="id_relationship">Relationship</label>
           {{ form.relationship }}
         </div>
 
-        <!-- Children -->
         <div class="form-group full-width">
           <label for="id_children">Assign Children</label>
           {{ form.children }}
@@ -98,9 +104,15 @@
 
       <!-- Buttons -->
       <div class="form-actions">
-        <button type="submit" class="btn-primary">
-          <i class="fas fa-save"></i> Save Parent
-        </button>
+        {% if editing %}
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-save"></i> Update Parent
+          </button>
+        {% else %}
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-save"></i> Save Parent
+          </button>
+        {% endif %}
         <a href="{% url 'manage_parents' %}" class="btn-secondary">
           <i class="fas fa-times"></i> Cancel
         </a>
@@ -136,22 +148,11 @@ $(document).ready(function() {
   margin: auto;
   transition: transform 0.3s ease;
 }
-.form-card:hover {
-  transform: translateY(-3px);
-}
+.form-card:hover { transform: translateY(-3px); }
 
 /* 🌈 Typography */
-.form-title {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-.form-subtitle {
-  color: #7f8c8d;
-  font-size: 1rem;
-  margin-bottom: 1.8rem;
-}
+.form-title { font-size: 1.7rem; font-weight: 700; color: #2c3e50; margin-bottom: 0.5rem; }
+.form-subtitle { color: #7f8c8d; font-size: 1rem; margin-bottom: 1.8rem; }
 
 /* 🧩 Grid Layout */
 .form-grid {
@@ -159,126 +160,65 @@ $(document).ready(function() {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
 }
-.full-width {
-  grid-column: span 2;
-}
+.full-width { grid-column: span 2; }
 
 /* ✏️ Form Controls */
-.form-group label {
-  font-weight: 600;
-  color: #34495e;
-  margin-bottom: 0.3rem;
-  display: block;
-}
+.form-group label { font-weight: 600; color: #34495e; margin-bottom: 0.3rem; display: block; }
 .form-control, .form-group select, .form-group input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #dcdde1;
-  border-radius: 10px;
-  background: #f9f9f9;
-  font-size: 0.95rem;
-  transition: 0.3s;
+  width: 100%; padding: 10px 12px; border: 1px solid #dcdde1; border-radius: 10px;
+  background: #f9f9f9; font-size: 0.95rem; transition: 0.3s;
 }
-.form-control:focus {
-  border-color: #3498db;
-  background: #fff;
-  box-shadow: 0 0 5px rgba(52,152,219,0.3);
-}
+.form-control:focus { border-color: #3498db; background: #fff; box-shadow: 0 0 5px rgba(52,152,219,0.3); }
 
 /* 🚀 Buttons */
-.form-actions {
-  margin-top: 2rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
+.form-actions { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 1rem; }
 .btn-primary, .btn-secondary {
-  padding: 0.8rem 1.4rem;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  padding: 0.8rem 1.4rem; border-radius: 10px; font-weight: 600; cursor: pointer;
+  transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
 }
 .btn-primary {
   background: linear-gradient(135deg, #3498db, #2980b9);
-  border: none;
-  color: #fff;
+  border: none; color: #fff;
 }
-.btn-primary:hover {
-  background: linear-gradient(135deg, #2980b9, #1f6391);
-}
+.btn-primary:hover { background: linear-gradient(135deg, #2980b9, #1f6391); }
 .btn-secondary {
-  background: #ecf0f1;
-  color: #2c3e50;
-  text-decoration: none;
+  background: #ecf0f1; color: #2c3e50; text-decoration: none;
 }
-.btn-secondary:hover {
-  background: #dcdde1;
-}
+.btn-secondary:hover { background: #dcdde1; }
 
 /* 💬 Alerts */
 .alert {
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;
 }
 .alert.success, .alert.successmessage {
-  background: #eafaf1;
-  color: #1e8449;
-  border: 1px solid #27ae60;
+  background: #eafaf1; color: #1e8449; border: 1px solid #27ae60;
 }
 .alert.error, .alert.errormessage {
-  background: #fdecea;
-  color: #c0392b;
-  border: 1px solid #e74c3c;
+  background: #fdecea; color: #c0392b; border: 1px solid #e74c3c;
 }
 
 /* 🧾 Login Info Box */
 .login-info-box {
-  background: #f4faff;
-  border-left: 4px solid #3498db;
-  padding: 1rem 1.2rem;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  animation: fadeIn 0.4s ease-in-out;
+  background: #f4faff; border-left: 4px solid #3498db;
+  padding: 1rem 1.2rem; border-radius: 10px; margin-bottom: 1rem;
 }
-.login-info-box h4 {
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-.login-info-box code {
-  background: #ecf0f1;
-  padding: 2px 6px;
-  border-radius: 5px;
-}
+.login-info-box h4 { color: #2c3e50; margin-bottom: 0.5rem; }
+.login-info-box code { background: #ecf0f1; padding: 2px 6px; border-radius: 5px; }
 
 /* 🎨 Select2 Styling */
 .select2-container--classic .select2-selection--multiple {
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  background: #f9f9f9;
-  min-height: 46px;
-  padding: 6px;
+  border-radius: 10px; border: 1px solid #ccc; background: #f9f9f9; min-height: 46px; padding: 6px;
 }
 .select2-selection__choice {
-  background-color: #3498db !important;
-  color: #fff !important;
-  border-radius: 5px !important;
-  padding: 4px 8px !important;
-  margin-top: 4px !important;
+  background-color: #3498db !important; color: #fff !important;
+  border-radius: 5px !important; padding: 4px 8px !important; margin-top: 4px !important;
 }
 
 /* ✨ Animation */
+.animate-fadein { animation: fadeIn 0.5s ease-in-out; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadein {
-  animation: fadeIn 0.5s ease-in-out;
 }
 
 /* 📱 Responsive */
