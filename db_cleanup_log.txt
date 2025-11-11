@@ -1,0 +1,42 @@
+
+--- Database Cleanup Log (2025-11-11 12:31:22) ---
+ Removed index: communicati_search__cb8eb3_gin
+ Removed index: academics_attendancerecord_session_id_243d03b2
+ Removed index: academics_attendancerecord_student_id_c9bbe665
+ Removed index: academics_attendancesession_classroom_id_05c55272
+ Removed index: academics_attendancesession_session_id_2e61f1a4
+ Removed index: academics_attendancesession_subject_id_62497123
+ Removed index: academics_attendancesession_teacher_id_8a851c85
+ Removed index: academics_classroom_name_ad83f436_like
+ Removed index: academics_enrollment_student_id_b0ee2adf
+ Removed index: academics_enrollment_subject_id_d05b2491
+ Removed index: academics_session_name_a334be42_like
+ Removed index: academics_subject_classroom_id_71d505f3
+ Removed index: academics_subject_code_c5fb2e09_like
+ Removed index: academics_subject_teacher_id_33411486
+ Removed index: accounts_customuser_email_4fd8e7ce_like
+ Removed index: accounts_customuser_groups_customuser_id_bc55088e
+ Removed index: accounts_customuser_groups_group_id_86ba5f9e
+ Removed index: accounts_customuser_user_permissions_customuser_id_0deaefae
+ Removed index: accounts_customuser_username_722f3555_like
+ Removed index: auth_group_name_a6ea08ec_like
+ Removed index: auth_group_permissions_group_id_b120cbf9
+ Removed index: auth_group_permissions_permission_id_84c5c92e
+ Removed index: auth_permission_content_type_id_2f476e4b
+ Removed index: communications_message_conversation_id_4929d245
+ Removed index: communications_message_sender_id_559db3f5
+ Removed index: django_admin_log_content_type_id_c4bce8eb
+ Removed index: django_admin_log_user_id_c564eba6
+ Removed index: finance_feetype_name_824f72ba_like
+ Removed index: finance_invoice_invoice_number_ddadaf76_like
+ Removed index: finance_invoice_session_id_276e9d57
+ Removed index: finance_invoice_student_id_c9f27ede
+ Removed index: finance_payment_received_by_id_12510897
+ Removed index: finance_payment_reference_c63f72ef_like
+ Removed index: finance_payment_student_fee_id_2fa4bd1d
+ Removed index: finance_studentfeerecord_fee_type_id_f55352e7
+ Removed index: finance_studentfeerecord_session_id_cb15b88e
+ Removed index: finance_studentfeerecord_student_id_7e99d3d2
+
+Summary: 37 removed, 0 failed.
+------------------------------------------------------------
