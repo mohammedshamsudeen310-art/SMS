@@ -36,8 +36,8 @@ urlpatterns = [
 
     path('child-performance/', views.child_performance, name='child_performance'),
     path('child-result/<int:student_id>/', views.child_result, name='child_result'),
-    path('import-backup/', views.import_backup, name='import_backup'),
 
+    path("export-data/", views.export_data, name="export_data"),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

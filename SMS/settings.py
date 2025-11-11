@@ -1,7 +1,17 @@
 import os
 from pathlib import Path
-import dj_database_url
-from dotenv import load_dotenv
+try:
+    import dj_database_url  # type: ignore[import]
+except Exception:
+    dj_database_url = None
+
+# dotenv may not be available in all environments (e.g., some linters or minimal containers)
+try:
+    from dotenv import load_dotenv  # type: ignore[import]
+except Exception:
+    # Provide a no-op fallback so settings load without the package installed.
+    def load_dotenv(*args, **kwargs):
+        return None
 
 # -----------------------------------------
 # ✅ Load environment variables
@@ -21,7 +31,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 # ⚙️ Installed Apps
 # -----------------------------------------
 INSTALLED_APPS = [
-    # 'django-jazzmin',
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -80,21 +90,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'SMS.wsgi.application'
 
 # -----------------------------------------
-# 🗃️ Database Configuration
-# -----------------------------------------
-# -----------------------------------------
 # 🗃️ Database Configuration (Auto Switch)
 # -----------------------------------------
-
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if DATABASE_URL and "render.com" in DATABASE_URL:
-    # Use Render PostgreSQL in production
+if DATABASE_URL and dj_database_url:
+    # Use PostgreSQL (Render)
     DATABASES = {
         "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
-    # Use SQLite for local development
+    # Default to SQLite locally
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

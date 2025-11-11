@@ -30,13 +30,47 @@ from django.core.management import call_command
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 
-@staff_member_required
-def import_backup(request):
+
+import json
+from django.http import HttpResponse
+from django.core.serializers import serialize
+from django.contrib.auth.decorators import user_passes_test
+
+@user_passes_test(lambda u: u.is_superuser)
+def export_data(request):
     try:
-        call_command('loaddata', 'backup.json')
-        return HttpResponse("✅ Data import completed successfully!")
+        data = serialize(
+            "json",
+            [],
+            use_natural_primary_keys=True,
+            use_natural_foreign_keys=True,
+            indent=4
+        )
+
+        from django.apps import apps
+        all_models = apps.get_models()
+
+        all_objects = []
+        for model in all_models:
+            all_objects.extend(model.objects.all())
+
+        data = serialize(
+            "json",
+            all_objects,
+            use_natural_primary_keys=True,
+            use_natural_foreign_keys=True,
+            indent=4,
+            ensure_ascii=False  # Important: prevents encoding errors
+        )
+
+        response = HttpResponse(data, content_type="application/json; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="db_backup.json"'
+        return response
+
     except Exception as e:
-        return HttpResponse(f"❌ Error: {e}")
+        return HttpResponse(f"<h3 style='color:red;'>❌ Error: {e}</h3>")
+
+
 
 # ==========================================
 # 1️⃣ AUTHENTICATION
