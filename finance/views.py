@@ -98,17 +98,6 @@ def record_payment(request):
             fee_record.amount_paid += payment.amount
             fee_record.save()  # auto-updates balance & is_cleared if defined in model logic
 
-            # 🔹 Update related invoice if exists
-            try:
-                invoice = Invoice.objects.get(
-                    student=fee_record.student,
-                    term=fee_record.term,
-                    session=fee_record.session
-                )
-                invoice.total_paid += payment.amount
-                invoice.save()
-            except Invoice.DoesNotExist:
-                pass
 
             # 🔹 Automatically set the receiver to the logged-in user
             payment.received_by = request.user if request.user.is_authenticated else None
@@ -159,30 +148,25 @@ def update_finance_summary():
 # ===========================
 # 📊 JSON Summary Endpoint
 # ===========================
+@login_required
 def finance_summary_json(request):
-    """Return current finance summary data as JSON for dashboard refresh."""
-    summary, _ = FinanceSummary.objects.get_or_create(id=1)
+    total_students = Student.objects.count()  # all students
+    students_with_fees = Invoice.objects.values('student').distinct().count()  # students with invoices
 
-    total_students = StudentFeeRecord.objects.values("student").distinct().count()
-    total_due = StudentFeeRecord.objects.aggregate(total=Sum("total_amount"))["total"] or 0
-    total_paid = StudentFeeRecord.objects.aggregate(total=Sum("amount_paid"))["total"] or 0
-    total_balance = StudentFeeRecord.objects.aggregate(total=Sum("balance"))["total"] or 0
-    pending_total = total_balance  # alias for clarity
-
-    fully_paid = StudentFeeRecord.objects.filter(is_cleared=True).count()
-    partially_paid = StudentFeeRecord.objects.filter(amount_paid__gt=0, is_cleared=False).count()
-    unpaid = StudentFeeRecord.objects.filter(amount_paid=0).count()
+    total_invoices = Invoice.objects.count()
+    total_paid = Invoice.objects.aggregate(total=Sum('total_paid'))['total'] or 0
+    total_due = Invoice.objects.aggregate(total=Sum('total_due'))['total'] or 0
+    total_balance = total_due - total_paid
+    pending_total = Invoice.objects.filter(balance__gt=0, total_paid__gt=0).aggregate(total=Sum('balance'))['total'] or 0
 
     data = {
         "total_students": total_students,
-        "total_invoices": Invoice.objects.count(),
+        "students_with_fees": students_with_fees,
+        "total_invoices": total_invoices,
         "total_paid": float(total_paid),
         "total_due": float(total_due),
         "total_balance": float(total_balance),
         "pending_total": float(pending_total),
-        "fully_paid": fully_paid,
-        "partially_paid": partially_paid,
-        "unpaid": unpaid,
     }
     return JsonResponse(data)
 

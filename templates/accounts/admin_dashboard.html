@@ -14,7 +14,12 @@
 
     <div class="summary-card gradient-blue">
       <h4>Total Students</h4>
-      <p id="total_students">{{ total_students }}</p>
+      <p id="total_students">0</p>
+    </div>
+
+    <div class="summary-card gradient-purple">
+      <h4>Students with Fees</h4>
+      <p id="students_with_fees">0</p>
     </div>
 
     <div class="summary-card gradient-green">
@@ -41,6 +46,7 @@
       <h4>Total Teachers</h4>
       <p>{{ total_teachers|default:"0" }}</p>
     </div>
+
   </div>
 
   <!-- ===== Management Links ===== -->
@@ -55,7 +61,7 @@
       <h3>👩‍🏫 Manage Teachers</h3>
       <p>Assign roles and manage records</p>
     </a>
-    
+
     <a href="{% url 'manage_students' %}" class="card gradient-purple">
       <h3>🎓 Manage Students</h3>
       <p>Enroll, update, and monitor progress</p>
@@ -136,8 +142,9 @@ document.addEventListener("DOMContentLoaded", function() {
     fetch("{% url 'finance_summary_json' %}")
       .then(response => response.json())
       .then(data => {
-        // 🧮 Update numeric counters on dashboard
+        // Update numeric counters
         document.getElementById("total_students").textContent = data.total_students.toLocaleString();
+        document.getElementById("students_with_fees").textContent = data.students_with_fees.toLocaleString();
         document.getElementById("total_invoices").textContent = data.total_invoices.toLocaleString();
         document.getElementById("total_fees_paid").textContent = "₵" + data.total_paid.toLocaleString();
         document.getElementById("pending_fees").textContent = "₵" + data.pending_total.toLocaleString();
@@ -146,7 +153,6 @@ document.addEventListener("DOMContentLoaded", function() {
       .catch(error => console.error("Error refreshing finance summary:", error));
   }
 
-  // 🔁 Auto-refresh every 30 seconds
   setInterval(updateFinanceSummary, refreshInterval);
   updateFinanceSummary();
 });
@@ -154,7 +160,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <!-- ===== Styling ===== -->
 <style>
-/* ===== General Layout ===== */
 .dashboard-wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -180,7 +185,6 @@ document.addEventListener("DOMContentLoaded", function() {
   font-size: 1.3rem;
 }
 
-/* ===== Summary Cards ===== */
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -196,11 +200,23 @@ document.addEventListener("DOMContentLoaded", function() {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.summary-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-.summary-card h4 { font-size: 1.1rem; margin-bottom: 10px; font-weight: 500; }
-.summary-card p { font-size: 1.7rem; font-weight: 700; }
 
-/* ===== Management Cards ===== */
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.summary-card h4 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.summary-card p {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -218,11 +234,22 @@ document.addEventListener("DOMContentLoaded", function() {
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-.card h3 { font-size: 1.2rem; margin-bottom: 8px; }
-.card p { font-size: 0.95rem; opacity: 0.9; }
 
-/* ===== Charts Section ===== */
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.card p {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
 .charts-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -237,10 +264,17 @@ document.addEventListener("DOMContentLoaded", function() {
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   transition: transform 0.3s ease;
 }
-.chart-card:hover { transform: translateY(-3px); }
-.chart-card h3 { font-size: 1.1rem; margin-bottom: 15px; color: #1e293b; }
 
-/* ===== Gradients ===== */
+.chart-card:hover {
+  transform: translateY(-3px);
+}
+
+.chart-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  color: #1e293b;
+}
+
 .gradient-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
 .gradient-green { background: linear-gradient(135deg, #10b981, #059669); }
 .gradient-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
@@ -248,11 +282,15 @@ document.addEventListener("DOMContentLoaded", function() {
 .gradient-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
 .gradient-gray { background: linear-gradient(135deg, #6b7280, #4b5563); }
 
-/* ===== Animation ===== */
-.fade-in { animation: fadeIn 0.6s ease-in; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in {
+  animation: fadeIn 0.6s ease-in;
+}
 
-/* ===== Responsive Fixes ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 768px) {
   .dashboard-wrapper { padding: 15px; }
   .greeting { font-size: 1.4rem; }

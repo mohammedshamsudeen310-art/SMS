@@ -189,7 +189,7 @@ def profile(request):
 @login_required
 def admin_dashboard(request):
     total_students = Student.objects.count()
-    total_teachers = CustomUser.objects.filter(role='teacher').count()
+    total_teachers = Teacher.objects.count()
     total_invoices = Invoice.objects.count()
 
     invoice_stats = Invoice.objects.aggregate(
@@ -264,82 +264,129 @@ def manage_parents(request):
     return render(request, 'accounts/manage_parents.html', {'parents': parents})
 
 # ✅ Add parent
+# views.py
+import secrets
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.shortcuts import render, redirect
+from django.utils.text import slugify
+from django.contrib.auth.decorators import login_required
 
-from .forms import ParentProfileForm
+from .forms import ParentProfileForm  # your form
+from .models import Parent, Student  # adjust to your actual model paths
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
 @login_required
 def add_parent(request):
-    if request.method == 'POST':
+    """
+    Create a ParentProfile and linked User safely.
+    The ParentProfile form must include a field (e.g. 'children') for selecting students (M2M).
+    """
+    if request.method == "POST":
         form = ParentProfileForm(request.POST, request.FILES)
         if form.is_valid():
-            # 🔹 Extract form data
-            username_input = form.cleaned_data.get('username')
-            email = form.cleaned_data.get('email')
-            full_name = form.cleaned_data.get('fullname') or "Parent User"
-
-            # 🔹 Extract first and last names safely
-            name_parts = full_name.split()
-            first_name = name_parts[0]
-            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
-
-            # 🔹 Generate a unique username if the provided one exists
-            base_username = username_input.strip() if username_input else full_name.replace(" ", "_").lower()
-            username = base_username
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
-
-            # 🔹 Prevent duplicate email
-            if email and User.objects.filter(email=email).exists():
-                messages.error(request, "⚠️ A user with this email already exists. Please use another.")
-                return render(request, 'accounts/parent_form.html', {'form': form, 'title': 'Add Parent'})
-
+            # Start atomic transaction so nothing gets half-saved
             try:
-                # 🔹 Create linked User account
-                user = User.objects.create_user(
-                    username=username,
-                    email=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                    password="parent123",  # optionally auto-generate secure passwords
-                    role='parent',          # ensure your User model has a 'role' field
-                )
+                with transaction.atomic():
+                    # Gather basic fields
+                    username_input = form.cleaned_data.get("username") or ""
+                    email = form.cleaned_data.get("email") or ""
+                    full_name = form.cleaned_data.get("fullname") or form.cleaned_data.get("name") or "Parent User"
 
-                # 🔹 Create and link Parent profile
-                parent = form.save(commit=False)
-                parent.user = user
-                parent.save()
-                form.save_m2m()  # Save ManyToMany relationships (children)
+                    # Derive first_name/last_name safely
+                    name_parts = full_name.strip().split()
+                    first_name = name_parts[0] if name_parts else ""
+                    last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
 
-                messages.success(
-                    request,
-                    f"✅ Parent '{full_name}' added successfully!\n"
-                    f"👤 Login → username: {username}, password: parent123"
-                )
-                return redirect('manage_parents')
+                    # Build a safe base username
+                    base = slugify(username_input) if username_input.strip() else slugify(full_name) or "parent"
+                    if not base:
+                        base = "parent"
 
-            except IntegrityError as e:
-                print(f"IntegrityError: {e}")
-                messages.error(request, "⚠️ Something went wrong while saving the parent. Try again.")
-                
+                    username = base
+                    counter = 1
+                    # Ensure username uniqueness
+                    while User.objects.filter(username=username).exists():
+                        username = f"{base}{counter}"
+                        counter += 1
+
+                    # Prevent duplicate emails (optional: you might want to allow same email but generally not)
+                    if email and User.objects.filter(email__iexact=email).exists():
+                        messages.error(request, "A user with this email already exists. Please use another email.")
+                        return render(request, "accounts/parent_form.html", {"form": form, "title": "Add Parent"})
+
+                    # Generate a secure temporary password
+                    temp_password = secrets.token_urlsafe(8)  # ~11 characters, URL-safe
+                    # Create user
+                    user_kwargs = {
+                        "username": username,
+                        "email": email,
+                        "first_name": first_name,
+                        "last_name": last_name,
+                    }
+
+                    # Create user instance
+                    user = User.objects.create_user(**user_kwargs, password=temp_password)
+
+                    # If your custom user model has a 'role' attribute, set it safely
+                    if hasattr(user, "role"):
+                        try:
+                            user.role = "parent"
+                            user.save(update_fields=["role"])
+                        except Exception:
+                            # non-fatal — continue
+                            logger.debug("Could not set role on user - continuing")
+
+                    # Save ParentProfile and attach the created user
+                    parent_profile = form.save(commit=False)
+                    parent_profile.user = user
+                    parent_profile.save()
+                    # Save M2M data (children selection etc.)
+                    form.save_m2m()
+
+                    # If your ParentProfile keeps a M2M field named 'children' or 'students', ensure it's set.
+                    # This is idempotent if the form already handled it, but kept for explicitness:
+                    children_selected = form.cleaned_data.get("children") or form.cleaned_data.get("students")
+                    if children_selected:
+                        # Try to determine the M2M field name (common names: children, students)
+                        try:
+                            if hasattr(parent_profile, "children"):
+                                parent_profile.children.set(children_selected)
+                            elif hasattr(parent_profile, "students"):
+                                parent_profile.students.set(children_selected)
+                            else:
+                                # If your form already saved M2M, nothing else is required
+                                pass
+                        except Exception as e:
+                            logger.exception("Failed to attach children to parent_profile: %s", e)
+
+                    # Success message includes username and password so admin can share credentials.
+                    # IMPORTANT: For production you may want to email the password instead and NOT show it in UI.
+                    messages.success(
+                        request,
+                        f"Parent '{full_name}' created. Username: {username} — Temporary password: {temp_password}"
+                    )
+
+                    return redirect("manage_parents")
+
+            except IntegrityError as exc:
+                logger.exception("IntegrityError creating parent: %s", exc)
+                messages.error(request, "A database error occurred while creating the parent — no changes were saved.")
+            except Exception as exc:
+                logger.exception("Unexpected error creating parent: %s", exc)
+                messages.error(request, "An unexpected error occurred. Please try again or contact support.")
         else:
-            messages.error(request, "⚠️ Please correct the errors below.")
+            messages.error(request, "Please fix the errors in the form below.")
     else:
         form = ParentProfileForm()
 
-    return render(request, 'accounts/parent_form.html', {
-        'form': form,
-        'title': 'Add Parent',
-    })
+    return render(request, "accounts/parent_form.html", {"form": form, "title": "Add Parent"})
 
 
 # ✅ Edit parent

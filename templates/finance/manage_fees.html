@@ -70,7 +70,7 @@
 <!-- 🔹 Action Buttons -->
 <div class="action-bar">
   <a href="{% url 'fee_types' %}" class="action-btn type">🧾 Fee Types</a>
-  <a href="{% url 'bulk_fee_assignment' %}" class="action-btn bulk">📦 Bulk Fee Assignment</a>
+  {% comment %} <a href="{% url 'bulk_fee_assignment' %}" class="action-btn bulk">📦 Bulk Fee Assignment</a> {% endcomment %}
   <a href="{% url 'bulk_create_fee_records' %}" class="action-btn create">🧮 Bulk Fee Creation</a>
   <a href="{% url 'add_fee' %}" class="action-btn add">💰 Add Fees</a>
   <a href="{% url 'manage_invoices' %}" class="action-btn invoice">🧾 Manage Invoices</a>  <!-- ✅ NEW LINK -->
@@ -82,10 +82,10 @@
     <h3>Total Fee Types</h3>
     <p>{{ total_fees }}</p>
   </div>
-  <div class="card">
+  {% comment %} <div class="card">
     <h3>Bulk Assignments</h3>
     <p>{{ total_assignments }}</p>
-  </div>
+  </div> {% endcomment %}
   <div class="card">
     <h3>Student Fee Records</h3>
     <p>{{ total_records }}</p>
