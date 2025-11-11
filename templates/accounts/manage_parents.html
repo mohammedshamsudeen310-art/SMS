@@ -3,49 +3,111 @@
 
 {% block content %}
 <style>
-.table-container {
+/* --- Responsive Table Styling --- */
+.table-wrapper {
   background: #fff;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   margin-top: 1.5rem;
+  overflow-x: auto; /* enables horizontal scroll on small screens */
+  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
 }
-.table-container h2 {
+
+.table-wrapper h2 {
   margin-bottom: 1rem;
   color: #333;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
-.table-container table {
+
+.table-wrapper .btn-add {
+  background: #2b77e5;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.3s;
+}
+
+.table-wrapper .btn-add:hover {
+  background: #1e5fb8;
+}
+
+/* Table itself */
+.table-wrapper table {
   width: 100%;
+  min-width: 720px; /* ensures columns don’t squeeze too tight on small screens */
   border-collapse: collapse;
 }
-.table-container th, .table-container td {
+
+.table-wrapper th, .table-wrapper td {
   padding: 0.8rem;
   text-align: left;
   border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+  color: #333;
 }
-.table-container tr:hover {
+
+.table-wrapper tr:hover {
   background-color: #f9f9f9;
 }
+
+.table-wrapper th {
+  background: #f4f7fb;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+/* Image styling */
+.table-wrapper img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Action links */
 .action-btns a {
   margin-right: 8px;
   text-decoration: none;
   font-size: 0.9rem;
 }
-.btn-add {
-  display: inline-block;
-  background: #2b77e5;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  text-decoration: none;
+
+.action-btns a.edit {
+  color: #1e88e5;
+}
+
+.action-btns a.delete {
+  color: #e53935;
+}
+
+@media (max-width: 768px) {
+  .table-wrapper {
+    padding: 1rem;
+  }
+  .table-wrapper h2 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .btn-add {
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>
 
-<div class="table-container">
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h2>👨‍👩‍👧 Manage Parents</h2>
+<div class="table-wrapper">
+  <h2>
+    👨‍👩‍👧 Manage Parents
     <a href="{% url 'add_parent' %}" class="btn-add">➕ Add Parent</a>
-  </div>
+  </h2>
 
   <table>
     <thead>
@@ -63,9 +125,9 @@
       <tr>
         <td>
           {% if parent.photo %}
-          <img src="{{ parent.photo.url }}" alt="Photo" style="width:40px; height:40px; border-radius:50%;">
+            <img src="{{ parent.photo.url }}" alt="Photo">
           {% else %}
-          —
+            —
           {% endif %}
         </td>
         <td>{{ parent.user.get_full_name|default:parent.user.username }}</td>
@@ -79,12 +141,14 @@
           {% endfor %}
         </td>
         <td class="action-btns">
-          <a href="{% url 'edit_parent' parent.pk %}" style="color:#1e88e5;">✏️ Edit</a>
-          <a href="{% url 'delete_parent' parent.pk %}" style="color:#e53935;" onclick="return confirm('Are you sure you want to delete this parent?');">🗑️ Delete</a>
+          <a href="{% url 'edit_parent' parent.pk %}" class="edit">✏️ Edit</a>
+          <a href="{% url 'delete_parent' parent.pk %}" class="delete" onclick="return confirm('Are you sure you want to delete this parent?');">🗑️ Delete</a>
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="6" style="text-align:center; color:#777;">No parents found.</td></tr>
+      <tr>
+        <td colspan="6" style="text-align:center; color:#777;">No parents found.</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
