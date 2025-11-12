@@ -10,8 +10,8 @@
   padding: 1.5rem;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   margin-top: 1.5rem;
-  overflow-x: auto; /* enables horizontal scroll on small screens */
-  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-wrapper h2 {
@@ -38,10 +38,48 @@
   background: #1e5fb8;
 }
 
+/* Search box */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-bar input[type="text"] {
+  flex: 1;
+  min-width: 220px;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border 0.3s;
+}
+
+.search-bar input[type="text"]:focus {
+  border-color: #2b77e5;
+  outline: none;
+}
+
+.search-bar button {
+  background: #2b77e5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.search-bar button:hover {
+  background: #1e5fb8;
+}
+
 /* Table itself */
 .table-wrapper table {
   width: 100%;
-  min-width: 720px; /* ensures columns don’t squeeze too tight on small screens */
+  min-width: 720px;
   border-collapse: collapse;
 }
 
@@ -100,6 +138,13 @@
     width: 100%;
     text-align: center;
   }
+  .search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-bar button {
+    width: 100%;
+  }
 }
 </style>
 
@@ -108,6 +153,12 @@
     👨‍👩‍👧 Manage Parents
     <a href="{% url 'add_parent' %}" class="btn-add">➕ Add Parent</a>
   </h2>
+
+  <!-- 🔍 Search Form -->
+  <form method="get" class="search-bar">
+    <input type="text" name="q" placeholder="Search by parent name, email, or occupation..." value="{{ request.GET.q }}">
+    <button type="submit">🔍 Search</button>
+  </form>
 
   <table>
     <thead>

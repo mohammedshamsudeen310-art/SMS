@@ -260,8 +260,20 @@ def admin_dashboard(request):
 # ✅ Manage list
 @login_required
 def manage_parents(request):
-    parents = Parent.objects.select_related('user').all()
+    query = request.GET.get('q', '')
+    parents = Parent.objects.all()
+
+    if query:
+        parents = parents.filter(
+            Q(user__username__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(user__email__icontains=query) |
+            Q(occupation__icontains=query)
+        ).distinct()
+
     return render(request, 'accounts/manage_parents.html', {'parents': parents})
+
 
 # ✅ Add parent
 # views.py
