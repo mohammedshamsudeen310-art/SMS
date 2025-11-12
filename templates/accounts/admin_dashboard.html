@@ -27,6 +27,11 @@
       <p id="total_invoices">{{ total_invoices }}</p>
     </div>
 
+    <div class="summary-card gradient-green">
+      <h4>Fees Due</h4>
+      <p id="total_fees_due">₵{{ total_fees_due }}</p>
+    </div>
+
     <div class="summary-card gradient-purple">
       <h4>Total Fees Paid</h4>
       <p id="total_fees_paid">₵{{ total_fees_paid }}</p>
@@ -71,12 +76,12 @@
   <!-- ===== Charts Section ===== -->
   <h3 class="section-title">Analytics & Insights</h3>
   <div class="charts-section">
-    <div class="chart-card">
+    <div class="chart-card glass-card">
       <h3>📊 Fee Collection Overview</h3>
       <canvas id="feeChart"></canvas>
     </div>
 
-    <div class="chart-card">
+    <div class="chart-card glass-card">
       <h3>📈 Monthly Revenue Trend</h3>
       <canvas id="revenueChart"></canvas>
     </div>
@@ -90,7 +95,6 @@
 <!-- ===== Charts Logic ===== -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // Fee Collection Chart
   new Chart(document.getElementById("feeChart"), {
     type: "bar",
     data: {
@@ -102,14 +106,9 @@ document.addEventListener("DOMContentLoaded", () => {
         borderRadius: 8
       }]
     },
-    options: { 
-      responsive: true, 
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
-    }
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
 
-  // Monthly Revenue Trend Chart
   new Chart(document.getElementById("revenueChart"), {
     type: "line",
     data: {
@@ -118,17 +117,13 @@ document.addEventListener("DOMContentLoaded", () => {
         label: "Revenue (₵)",
         data: {{ monthly_revenue|safe }},
         borderColor: "#2563eb",
-        backgroundColor: "rgba(37,99,235,0.2)",
+        backgroundColor: "rgba(37,99,235,0.25)",
         fill: true,
         tension: 0.4,
         borderWidth: 2
       }]
     },
-    options: { 
-      responsive: true, 
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
-    }
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
 });
 </script>
@@ -136,23 +131,20 @@ document.addEventListener("DOMContentLoaded", () => {
 <!-- ===== Live Auto Refresh ===== -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  const refreshInterval = 30000; // 30 seconds
-
+  const refreshInterval = 30000;
   function updateFinanceSummary() {
     fetch("{% url 'finance_summary_json' %}")
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
-        // Update numeric counters
         document.getElementById("total_students").textContent = data.total_students.toLocaleString();
         document.getElementById("students_with_fees").textContent = data.students_with_fees.toLocaleString();
         document.getElementById("total_invoices").textContent = data.total_invoices.toLocaleString();
         document.getElementById("total_fees_paid").textContent = "₵" + data.total_paid.toLocaleString();
         document.getElementById("pending_fees").textContent = "₵" + data.pending_total.toLocaleString();
         document.getElementById("unpaid_fees").textContent = "₵" + data.total_balance.toLocaleString();
-      })
-      .catch(error => console.error("Error refreshing finance summary:", error));
-  }
 
+      });
+  }
   setInterval(updateFinanceSummary, refreshInterval);
   updateFinanceSummary();
 });
@@ -163,58 +155,96 @@ document.addEventListener("DOMContentLoaded", function() {
 .dashboard-wrapper {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 25px;
+  padding: 30px 25px;
+  background: linear-gradient(145deg, #f9fafb, #eef2ff);
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 .greeting {
-  font-size: 1.8rem;
-  color: #1e293b;
+  font-size: 1.9rem;
+  color: #111827;
   font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
 }
 
 .subtitle {
-  color: #64748b;
-  margin-bottom: 30px;
+  color: #6b7280;
+  margin-bottom: 35px;
+  font-size: 1rem;
 }
 
 .section-title {
-  text-align: left;
   margin: 40px 0 15px;
   color: #1e293b;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1.3rem;
+  position: relative;
+}
+.section-title::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb, #06b6d4);
+  margin-top: 8px;
+  border-radius: 2px;
 }
 
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
+  gap: 22px;
+  margin-bottom: 45px;
 }
 
 .summary-card {
-  padding: 25px;
-  color: white;
+  padding: 25px 20px;
+  color: #fff;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  transition: all 0.35s ease;
+  position: relative;
+  overflow: hidden;
 }
-
+.summary-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255,255,255,0.08);
+  transform: rotate(45deg);
+  transition: 0.4s ease;
+}
+.summary-card:hover::before {
+  top: -40%;
+  left: -40%;
+}
 .summary-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.18);
 }
 
 .summary-card h4 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   margin-bottom: 10px;
   font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 .summary-card p {
-  font-size: 1.7rem;
+  font-size: 1.8rem;
   font-weight: 700;
+  animation: countIn 0.8s ease-out;
+}
+
+@keyframes countIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .cards-grid {
@@ -225,30 +255,32 @@ document.addEventListener("DOMContentLoaded", function() {
 }
 
 .card {
-  display: block;
   padding: 25px;
   color: white;
-  border-radius: 16px;
+  border-radius: 18px;
   text-align: center;
   text-decoration: none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: all 0.35s ease;
+  position: relative;
 }
-
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 18px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.card:hover::after { opacity: 1; }
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
-.card h3 {
-  font-size: 1.2rem;
-  margin-bottom: 8px;
-}
-
-.card p {
-  font-size: 0.95rem;
-  opacity: 0.9;
-}
+.card h3 { font-size: 1.2rem; margin-bottom: 8px; }
+.card p { font-size: 0.95rem; opacity: 0.9; }
 
 .charts-section {
   display: grid;
@@ -257,44 +289,40 @@ document.addEventListener("DOMContentLoaded", function() {
   margin-bottom: 40px;
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
 .chart-card {
-  background: #fff;
+  background: #ffffffaa;
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  padding: 22px;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.08);
   transition: transform 0.3s ease;
 }
+.chart-card:hover { transform: translateY(-3px); }
+.chart-card h3 { font-size: 1.1rem; margin-bottom: 15px; color: #1e293b; }
 
-.chart-card:hover {
-  transform: translateY(-3px);
-}
+.gradient-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.gradient-green { background: linear-gradient(135deg, #10b981, #047857); }
+.gradient-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.gradient-orange { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.gradient-red { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.gradient-gray { background: linear-gradient(135deg, #6b7280, #374151); }
 
-.chart-card h3 {
-  font-size: 1.1rem;
-  margin-bottom: 15px;
-  color: #1e293b;
-}
-
-.gradient-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.gradient-green { background: linear-gradient(135deg, #10b981, #059669); }
-.gradient-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-.gradient-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.gradient-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.gradient-gray { background: linear-gradient(135deg, #6b7280, #4b5563); }
-
-.fade-in {
-  animation: fadeIn 0.6s ease-in;
-}
-
+.fade-in { animation: fadeIn 0.6s ease-in; }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 768px) {
   .dashboard-wrapper { padding: 15px; }
-  .greeting { font-size: 1.4rem; }
-  .summary-card p { font-size: 1.4rem; }
+  .greeting { font-size: 1.5rem; }
+  .summary-card p { font-size: 1.5rem; }
   .cards-grid, .charts-section { grid-template-columns: 1fr; }
 }
 </style>

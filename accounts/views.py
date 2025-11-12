@@ -205,6 +205,7 @@ def admin_dashboard(request):
     fully_paid = Invoice.objects.filter(is_paid=True).count()
     partially_paid = Invoice.objects.filter(balance__gt=0, total_paid__gt=0).count()
     unpaid = Invoice.objects.filter(total_paid=0).count()
+    total_due = float(invoice_stats['total_due'] or 0)
 
     pending_total = Invoice.objects.filter(
         balance__gt=0, total_paid__gt=0
@@ -242,6 +243,7 @@ def admin_dashboard(request):
         "total_students": total_students,
         "total_teachers": total_teachers,
         "total_invoices": total_invoices,
+        "total_fees_due": total_due,
         "total_fees_paid": total_paid,
         "pending_fees": pending_total,
         "unpaid_fees": total_balance,

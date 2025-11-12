@@ -8,6 +8,7 @@
 
   <form method="POST" class="styled-form">
     {% csrf_token %}
+    
     <div class="form-group">
       <label for="id_name">Fee Name</label>
       {{ form.name }}
@@ -21,6 +22,13 @@
     <div class="form-group">
       <label for="id_description">Description</label>
       {{ form.description }}
+    </div>
+
+    <!-- ✅ Active Checkbox -->
+    <div class="form-group checkbox-group">
+      <label for="id_is_active" class="checkbox-label">
+        {{ form.is_active }} Active
+      </label>
     </div>
 
     <button type="submit" class="btn save">💾 Save Changes</button>
@@ -56,7 +64,9 @@ h2 {
   color: #333;
 }
 
-.styled-form input, .styled-form textarea, .styled-form select {
+.styled-form input,
+.styled-form textarea,
+.styled-form select {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -64,9 +74,31 @@ h2 {
   transition: 0.3s;
 }
 
-.styled-form input:focus, .styled-form textarea:focus {
+.styled-form input:focus,
+.styled-form textarea:focus {
   border-color: #004aad;
   box-shadow: 0 0 5px rgba(0,74,173,0.3);
+}
+
+/* ✅ Checkbox Styling */
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }
 
 .btn {
