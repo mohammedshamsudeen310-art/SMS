@@ -1,0 +1,144 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Edit Classroom{% endblock %}
+{% block header %}✏️ Edit Classroom{% endblock %}
+
+{% block content %}
+<div class="edit-classroom-container">
+
+  <div class="form-card">
+    <h2>Edit Classroom Details</h2>
+    <p class="subtitle">Update classroom information and click save when done.</p>
+
+    <form method="post" class="edit-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="btn-row">
+        <button type="submit" class="save-btn">💾 Update Classroom</button>
+        <a href="{% url 'manage_classrooms' %}" class="cancel-btn">← Cancel</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<style>
+/* ===== Container ===== */
+.edit-classroom-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.form-card {
+  background: #ffffff;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  max-width: 600px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.form-card:hover {
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.form-card h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.3rem;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== Form Styling ===== */
+.edit-form p {
+  margin-bottom: 1rem;
+}
+
+.edit-form label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.edit-form input[type="text"],
+.edit-form input[type="number"],
+.edit-form textarea,
+.edit-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+  background-color: #f9fafb;
+}
+
+.edit-form input:focus,
+.edit-form textarea:focus,
+.edit-form select:focus {
+  border-color: #2563eb;
+  outline: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+/* ===== Buttons ===== */
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.save-btn {
+  background: #2563eb;
+  color: #fff;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+.save-btn:hover { background: #1e40af; }
+
+.cancel-btn {
+  background: #e5e7eb;
+  color: #374151;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+.cancel-btn:hover { background: #d1d5db; }
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .form-card {
+    padding: 1.5rem;
+  }
+
+  .btn-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .save-btn, .cancel-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+</style>
+
+{% endblock %}

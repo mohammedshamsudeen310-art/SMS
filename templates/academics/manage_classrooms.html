@@ -1,0 +1,212 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Manage Classrooms{% endblock %}
+{% block header %}🏫 Manage Classrooms{% endblock %}
+
+{% block content %}
+<div class="classroom-container">
+
+  <!-- Header section -->
+  <div class="top-section">
+    <h2>Available Classrooms</h2>
+    <button class="add-btn" onclick="document.getElementById('addForm').classList.toggle('show')">➕ Add Class</button>
+  </div>
+
+  <!-- Add Classroom Form -->
+  <div id="addForm" class="classroom-form hidden">
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="save-btn">💾 Save Classroom</button>
+    </form>
+  </div>
+
+  <!-- Classrooms Table -->
+  <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Order</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for classroom in classrooms %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ classroom.name }}</td>
+          <td>{{ classroom.order }}</td>
+          <td>{{ classroom.description|default:"—" }}</td>
+          <td class="actions">
+            <a href="{% url 'edit_classroom' classroom.id %}" class="edit-btn" title="Edit">✏️</a>
+            <a href="{% url 'delete_classroom' classroom.id %}" class="delete-btn" title="Delete"
+               onclick="return confirm('Are you sure you want to delete this classroom?');">🗑️</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center">No classrooms available.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<style>
+/* ====== Container ====== */
+.classroom-container {
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* ====== Top Header ====== */
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.top-section h2 {
+  font-size: 1.4rem;
+  color: #111827;
+  font-weight: 600;
+}
+
+/* ====== Buttons ====== */
+.add-btn {
+  background: #2563eb;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+.add-btn:hover { background: #1e40af; }
+
+.save-btn {
+  background: #22c55e;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s ease-in-out;
+}
+.save-btn:hover { background: #16a34a; }
+
+/* ====== Form Section ====== */
+.classroom-form.hidden { display: none; }
+.classroom-form.show { display: block; margin-bottom: 1.5rem; }
+
+.form-grid {
+  display: grid;
+  gap: 10px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* ====== Table ====== */
+.table-container {
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.table th {
+  background: #2563eb;
+  color: #fff;
+  text-align: left;
+  padding: 12px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.95rem;
+}
+
+.table tr:hover {
+  background: #f1f5f9;
+  transition: background 0.2s ease;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn, .delete-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.edit-btn {
+  background: #e0e7ff;
+  color: #1e3a8a;
+}
+.edit-btn:hover {
+  background: #c7d2fe;
+}
+
+.delete-btn {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.delete-btn:hover {
+  background: #fecaca;
+}
+
+/* ====== Responsive Design ====== */
+@media (max-width: 768px) {
+  .top-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .add-btn, .save-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+  }
+
+  .table th, .table td {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .top-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+</style>
+
+{% endblock %}

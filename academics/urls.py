@@ -15,6 +15,10 @@ urlpatterns = [
     path("subjects/<int:pk>/edit/", views.edit_subject, name="edit_subject"),
     path("subjects/<int:pk>/delete/", views.delete_subject, name="delete_subject"),
 
+    path('classrooms/', views.manage_classrooms, name='manage_classrooms'),
+    path('classrooms/edit/<int:pk>/', views.edit_classroom, name='edit_classroom'),
+    path('classrooms/delete/<int:pk>/', views.delete_classroom, name='delete_classroom'),
+
     # ============================================================
     # 🔹 SESSIONS
     path("sessions/", views.manage_sessions, name="manage_sessions"),

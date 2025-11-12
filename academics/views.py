@@ -210,6 +210,48 @@ def import_students(request):
     return render(request, "academics/import_students.html")
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import ClassRoom
+from .forms import ClassRoomForm
+
+def manage_classrooms(request):
+    classrooms = ClassRoom.objects.all()
+
+    if request.method == 'POST':
+        form = ClassRoomForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'New classroom added successfully!')
+            return redirect('manage_classrooms')
+    else:
+        form = ClassRoomForm()
+
+    return render(request, 'academics/manage_classrooms.html', {
+        'form': form,
+        'classrooms': classrooms,
+    })
+
+
+def edit_classroom(request, pk):
+    classroom = get_object_or_404(ClassRoom, pk=pk)
+    if request.method == 'POST':
+        form = ClassRoomForm(request.POST, instance=classroom)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Classroom updated successfully!')
+            return redirect('manage_classrooms')
+    else:
+        form = ClassRoomForm(instance=classroom)
+    return render(request, 'academics/edit_classroom.html', {'form': form, 'classroom': classroom})
+
+
+def delete_classroom(request, pk):
+    classroom = get_object_or_404(ClassRoom, pk=pk)
+    classroom.delete()
+    messages.warning(request, f'Classroom "{classroom.name}" deleted.')
+    return redirect('manage_classrooms')
+
 
 
 # ✅ helper: check if user is admin/principal
