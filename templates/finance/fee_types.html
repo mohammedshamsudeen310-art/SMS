@@ -3,95 +3,113 @@
 {% block header %}🧾 Manage Fee Types{% endblock %}
 
 {% block content %}
-<div class="fee-container">
+<div class="fee-wrapper">
 
+  <!-- 🔹 Fee Form Section -->
   <div class="fee-form">
     <h2>Add New Fee Type</h2>
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}
-      <button type="submit" class="btn-save">Save Fee Type</button>
+      <button type="submit" class="btn-save">💾 Save Fee Type</button>
     </form>
   </div>
 
+  <!-- 🔹 Fee List Section -->
   <div class="fee-list">
     <h2>Existing Fee Types</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Amount (₵)</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for fee in fees %}
-        <tr>
-          <td>{{ forloop.counter }}</td>
-          <td>{{ fee.name }}</td>
-          <td>{{ fee.amount }}</td>
-          <td>
-            {% if fee.is_active %}
-              <span class="status active">Active</span>
-            {% else %}
-              <span class="status inactive">Inactive</span>
-            {% endif %}
-          </td>
-          <td class="actions">
-            <a href="{% url 'edit_fee_type' fee.id %}" class="btn-edit">Edit</a>
-            <a href="{% url 'delete_fee_type' fee.id %}" 
-               class="btn-delete" 
-               onclick="return confirm('Are you sure you want to delete this fee type?');">
-              Delete
-            </a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" class="empty">No Fee Types Added Yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Amount (₵)</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fee in fees %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ fee.name }}</td>
+            <td>{{ fee.amount }}</td>
+            <td>
+              {% if fee.is_active %}
+                <span class="status active">Active</span>
+              {% else %}
+                <span class="status inactive">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="actions">
+              <a href="{% url 'edit_fee_type' fee.id %}" class="btn-edit">Edit</a>
+              <a href="{% url 'delete_fee_type' fee.id %}" 
+                 class="btn-delete" 
+                 onclick="return confirm('Are you sure you want to delete this fee type?');">
+                Delete
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="empty">No Fee Types Added Yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
+
 </div>
 
 <style>
-/* 🔹 Layout */
-.fee-container {
+/* 🌐 Universal Styles */
+body {
+  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+  background: #f7f9fc;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 🔹 Wrapper Layout */
+.fee-wrapper {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 30px;
-  margin: 30px auto;
-  align-items: start;
+  padding: 20px;
 }
 
-/* 🔹 Panels */
+@media (max-width: 1024px) {
+  .fee-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 🔹 Card Containers */
 .fee-form, .fee-list {
-  background: #ffffff;
+  background: #fff;
   border-radius: 14px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   padding: 25px 30px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .fee-form:hover, .fee-list:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
 /* 🔹 Headings */
 .fee-form h2, .fee-list h2 {
   color: #004aad;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 18px;
-  border-bottom: 2px solid #004aad;
-  display: inline-block;
-  padding-bottom: 4px;
+  border-left: 4px solid #004aad;
+  padding-left: 10px;
 }
 
-/* 🔹 Form Styles */
+/* 🔹 Form Styling */
 form p {
   margin-bottom: 15px;
   display: flex;
@@ -100,56 +118,63 @@ form p {
 
 form label {
   font-weight: 600;
-  color: #333;
+  color: #222;
   margin-bottom: 5px;
 }
 
 form input, form select {
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 10px 12px;
   font-size: 0.95rem;
   outline: none;
-  transition: 0.3s;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 form input:focus, form select:focus {
   border-color: #004aad;
-  box-shadow: 0 0 4px rgba(0, 74, 173, 0.3);
+  box-shadow: 0 0 5px rgba(0, 74, 173, 0.25);
 }
 
-/* 🔹 Save Button */
+/* 🔹 Button Styles */
 .btn-save {
-  background: #28a745;
+  background: linear-gradient(90deg, #28a745, #20c997);
   color: #fff;
-  padding: 12px 20px;
-  border-radius: 8px;
+  padding: 12px 18px;
+  border-radius: 10px;
   border: none;
   font-weight: 600;
   cursor: pointer;
   width: 100%;
   margin-top: 10px;
+  font-size: 1rem;
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .btn-save:hover {
-  background: #218838;
+  background: linear-gradient(90deg, #218838, #1fa37a);
   transform: translateY(-2px);
 }
 
 /* 🔹 Table Styles */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
   border-radius: 10px;
   overflow: hidden;
+  min-width: 600px;
 }
 
 th, td {
   padding: 12px 14px;
   border-bottom: 1px solid #eee;
   text-align: left;
+  vertical-align: middle;
 }
 
 th {
@@ -165,7 +190,7 @@ td {
 }
 
 tr:hover {
-  background-color: #f9faff;
+  background-color: #f8faff;
 }
 
 .empty {
@@ -177,11 +202,12 @@ tr:hover {
 
 /* 🔹 Status Tags */
 .status {
-  padding: 5px 10px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: capitalize;
+  display: inline-block;
 }
 
 .status.active {
@@ -190,14 +216,14 @@ tr:hover {
 }
 
 .status.inactive {
-  background: #f44336;
+  background: #dc3545;
   color: #fff;
 }
 
-/* 🔹 Action Buttons */
+/* 🔹 Actions */
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .btn-edit, .btn-delete {
@@ -207,6 +233,7 @@ tr:hover {
   text-decoration: none;
   font-size: 0.85rem;
   transition: background 0.3s ease, transform 0.2s ease;
+  display: inline-block;
 }
 
 .btn-edit {
@@ -229,10 +256,33 @@ tr:hover {
   transform: translateY(-1px);
 }
 
-/* 🔹 Responsive */
-@media(max-width: 900px) {
-  .fee-container {
-    grid-template-columns: 1fr;
+/* 🔹 Mobile-Friendly Adjustments */
+@media (max-width: 768px) {
+  .fee-form, .fee-list {
+    padding: 20px;
+  }
+
+  th, td {
+    padding: 10px;
+  }
+
+  table {
+    font-size: 0.9rem;
+  }
+
+  .btn-save {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .fee-form h2, .fee-list h2 {
+    font-size: 1.1rem;
+  }
+
+  .btn-edit, .btn-delete {
+    font-size: 0.8rem;
+    padding: 5px 10px;
   }
 }
 </style>
