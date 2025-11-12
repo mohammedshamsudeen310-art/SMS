@@ -407,10 +407,24 @@ def add_parent(request):
 def edit_parent(request, pk):
     parent = get_object_or_404(Parent, pk=pk)
     user = parent.user  # linked User object
+    editing = True  # ✅ ensures 'editing' is defined for your logic
 
-    if request.method == 'POST':
-        form = ParentProfileForm(request.POST, request.FILES, instance=parent)
+    if request.method == "POST":
+        form = ParentProfileForm(request.POST, request.FILES, instance=parent if editing else None)
         if form.is_valid():
+            parent = form.save(commit=False)
+            parent.save()
+            form.save_m2m()
+
+            # Handle optional password reset
+            new_password = request.POST.get("new_password")
+            if editing and new_password:
+                parent.user.set_password(new_password)
+                parent.user.save()
+                messages.success(request, "Parent details updated and password reset successfully.")
+            else:
+                messages.success(request, "Parent details updated successfully.")
+
             # --- Update User fields ---
             username = form.cleaned_data.get('username', user.username)
             email = form.cleaned_data.get('email', user.email)
@@ -425,7 +439,6 @@ def edit_parent(request, pk):
             user.save()
 
             # --- Save Parent profile (keep children selection etc.) ---
-            parent = form.save(commit=False)
             parent.user = user
             parent.save()
             form.save_m2m()
@@ -448,6 +461,7 @@ def edit_parent(request, pk):
         'title': 'Edit Parent',
         'editing': True,
     })
+
 
 # ✅ Delete parent
 
