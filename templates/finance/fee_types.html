@@ -3,111 +3,97 @@
 {% block header %}🧾 Manage Fee Types{% endblock %}
 
 {% block content %}
-<div class="fee-wrapper">
+<div class="fee-container">
 
-  <!-- ✅ Left Panel: Add Fee Type -->
-  <div class="fee-form-card">
+  <div class="fee-form">
     <h2>Add New Fee Type</h2>
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}
-      <button type="submit" class="btn-save">💾 Save Fee Type</button>
+      <button type="submit" class="btn-save">Save Fee Type</button>
     </form>
   </div>
 
-  <!-- ✅ Right Panel: Fee List -->
-  <div class="fee-table-card">
+  <div class="fee-list">
     <h2>Existing Fee Types</h2>
-
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Amount (₵)</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for fee in fees %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ fee.name }}</td>
-            <td>{{ fee.amount }}</td>
-            <td>
-              {% if fee.is_active %}
-                <span class="status active">Active</span>
-              {% else %}
-                <span class="status inactive">Inactive</span>
-              {% endif %}
-            </td>
-            <td class="actions">
-              <a href="{% url 'edit_fee_type' fee.id %}" class="btn-edit">✏️ Edit</a>
-              <a href="{% url 'delete_fee_type' fee.id %}" 
-                 class="btn-delete"
-                 onclick="return confirm('Are you sure you want to delete this fee type?');">
-                 🗑 Delete
-              </a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="5" class="empty">No Fee Types Added Yet.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Amount (₵)</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fee in fees %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ fee.name }}</td>
+          <td>{{ fee.amount }}</td>
+          <td>
+            {% if fee.is_active %}
+              <span class="status active">Active</span>
+            {% else %}
+              <span class="status inactive">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="actions">
+            <a href="{% url 'edit_fee_type' fee.id %}" class="btn-edit">Edit</a>
+            <a href="{% url 'delete_fee_type' fee.id %}" 
+               class="btn-delete" 
+               onclick="return confirm('Are you sure you want to delete this fee type?');">
+              Delete
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="empty">No Fee Types Added Yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
 <style>
-/* ------------------------------
-   🌐 Layout
------------------------------- */
-.fee-wrapper {
+/* 🔹 Layout */
+.fee-container {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 30px;
   margin: 30px auto;
   align-items: start;
-  padding: 10px;
 }
 
-/* ------------------------------
-   🧾 Panels
------------------------------- */
-.fee-form-card, .fee-table-card {
+/* 🔹 Panels */
+.fee-form, .fee-list {
   background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   padding: 25px 30px;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.fee-form-card:hover, .fee-table-card:hover {
+.fee-form:hover, .fee-list:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 }
 
-/* ------------------------------
-   🏷️ Headings
------------------------------- */
-.fee-form-card h2, .fee-table-card h2 {
+/* 🔹 Headings */
+.fee-form h2, .fee-list h2 {
   color: #004aad;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 600;
   margin-bottom: 18px;
+  border-bottom: 2px solid #004aad;
   display: inline-block;
-  border-left: 5px solid #004aad;
-  padding-left: 10px;
+  padding-bottom: 4px;
 }
 
-/* ------------------------------
-   🧩 Form Styling
------------------------------- */
+/* 🔹 Form Styles */
 form p {
-  margin-bottom: 16px;
+  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
 }
@@ -115,7 +101,7 @@ form p {
 form label {
   font-weight: 600;
   color: #333;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 form input, form select {
@@ -123,54 +109,45 @@ form input, form select {
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 0.95rem;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  outline: none;
+  transition: 0.3s;
 }
 
 form input:focus, form select:focus {
   border-color: #004aad;
-  box-shadow: 0 0 6px rgba(0, 74, 173, 0.25);
+  box-shadow: 0 0 4px rgba(0, 74, 173, 0.3);
 }
 
-/* ------------------------------
-   💾 Save Button
------------------------------- */
+/* 🔹 Save Button */
 .btn-save {
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: #28a745;
   color: #fff;
   padding: 12px 20px;
   border-radius: 8px;
   border: none;
   font-weight: 600;
-  width: 100%;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+  width: 100%;
+  margin-top: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .btn-save:hover {
-  background: linear-gradient(135deg, #0056b3, #004aad);
+  background: #218838;
   transform: translateY(-2px);
 }
 
-/* ------------------------------
-   📋 Table Styling
------------------------------- */
-.table-container {
-  width: 100%;
-  overflow-x: auto; /* ✅ Makes table scrollable */
-  border-radius: 12px;
-  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.05);
-  -webkit-overflow-scrolling: touch;
-}
-
+/* 🔹 Table Styles */
 table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  min-width: 600px;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 th, td {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-bottom: 1px solid #eee;
   text-align: left;
 }
@@ -180,31 +157,28 @@ th {
   color: #fff;
   font-weight: 600;
   font-size: 0.95rem;
-  white-space: nowrap;
 }
 
 td {
-  font-size: 0.9rem;
   color: #333;
+  font-size: 0.9rem;
 }
 
 tr:hover {
-  background: #f5f9ff;
+  background-color: #f9faff;
 }
 
 .empty {
   text-align: center;
   color: #888;
   font-style: italic;
-  padding: 18px 0;
+  padding: 20px 0;
 }
 
-/* ------------------------------
-   🔹 Status Badges
------------------------------- */
+/* 🔹 Status Tags */
 .status {
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 5px 10px;
+  border-radius: 6px;
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: capitalize;
@@ -216,17 +190,14 @@ tr:hover {
 }
 
 .status.inactive {
-  background: #dc3545;
+  background: #f44336;
   color: #fff;
 }
 
-/* ------------------------------
-   ⚙️ Action Buttons
------------------------------- */
+/* 🔹 Action Buttons */
 .actions {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .btn-edit, .btn-delete {
@@ -235,9 +206,7 @@ tr:hover {
   font-weight: 600;
   text-decoration: none;
   font-size: 0.85rem;
-  display: inline-block;
-  transition: background 0.3s, transform 0.2s;
-  white-space: nowrap;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .btn-edit {
@@ -260,28 +229,10 @@ tr:hover {
   transform: translateY(-1px);
 }
 
-/* ------------------------------
-   📱 Responsive Design
------------------------------- */
-@media (max-width: 1000px) {
-  .fee-wrapper {
+/* 🔹 Responsive */
+@media(max-width: 900px) {
+  .fee-container {
     grid-template-columns: 1fr;
-  }
-  .fee-form-card, .fee-table-card {
-    padding: 20px;
-  }
-  table {
-    min-width: 500px;
-  }
-}
-
-@media (max-width: 600px) {
-  th, td {
-    padding: 10px;
-    font-size: 0.85rem;
-  }
-  .btn-edit, .btn-delete {
-    font-size: 0.8rem;
   }
 }
 </style>
