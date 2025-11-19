@@ -13,7 +13,6 @@ class PaymentForm(forms.ModelForm):
             "student_fee",
             "amount",
             "payment_method",
-            "reference",
             "date_paid",
         ]
 
@@ -30,10 +29,7 @@ class PaymentForm(forms.ModelForm):
             "payment_method": forms.Select(attrs={
                 "class": "form-control",
             }),
-            "reference": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Unique transaction reference",
-            }),
+            "reference": forms.HiddenInput(), # Reference will be auto-generated
             "date_paid": forms.DateInput(attrs={
                 "type": "date",
                 "class": "form-control",

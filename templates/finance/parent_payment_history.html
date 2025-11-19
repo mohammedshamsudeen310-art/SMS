@@ -211,7 +211,7 @@
         <td>{{ payment.get_payment_method_display }}</td>
         <td>{{ payment.reference }}</td>
         <td>{{ payment.date_paid|date:"M d, Y - h:i A" }}</td>
-        <td>{{ payment.received_by.get_full_name|default:"N/A" }}</td>
+        <td>{{ payment.received_by.get_username|default:"N/A" }}</td>
       </tr>
       {% endfor %}
     </tbody>

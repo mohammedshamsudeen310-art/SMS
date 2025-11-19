@@ -120,8 +120,8 @@ form.form-card {
   {% csrf_token %}
   {{ form.as_p }}
   <div class="form-buttons">
-    <button type="submit" class="btn-primary">💾 Save</button>
     <a href="{% url 'manage_sessions' %}" class="btn-secondary">↩ Back</a>
+    <button type="submit" class="btn-primary">💾 Save</button>
   </div>
 </form>
 {% endblock %}

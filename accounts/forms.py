@@ -68,9 +68,7 @@ class AccountantProfileForm(BaseProfileForm):
 from django import forms
 from .models import Parent, Student
 from django.contrib.auth.models import User  # ✅ To handle username/email linkage
-
 class ParentProfileForm(forms.ModelForm):
-    # ✅ New fields for quick parent creation
     username = forms.CharField(
         max_length=150,
         required=True,
@@ -81,7 +79,7 @@ class ParentProfileForm(forms.ModelForm):
         label="Username"
     )
     email = forms.EmailField(
-        required=True,
+        required=False,
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter email address'
@@ -111,10 +109,9 @@ class ParentProfileForm(forms.ModelForm):
     class Meta:
         model = Parent
         fields = [
-            'username',  # ✅ Added here
-            'email',     # ✅ Added here
-            'fullname',  # ✅ Added here
-            'date_of_birth',
+            'username',
+            'email',
+            'fullname',
             'gender',
             'address',
             'photo',
@@ -123,9 +120,6 @@ class ParentProfileForm(forms.ModelForm):
             'children',
         ]
         widgets = {
-            'date_of_birth': forms.DateInput(attrs={
-                'type': 'date', 'class': 'form-control'
-            }),
             'gender': forms.Select(attrs={'class': 'form-select'}),
             'address': forms.TextInput(attrs={
                 'class': 'form-control', 'placeholder': 'Enter home address'
@@ -139,7 +133,10 @@ class ParentProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # ✅ Label display for children
+
+        # 💥 Totally remove the date_of_birth field (fixes your issue)
+        self.fields.pop("date_of_birth", None)
+
         self.fields['children'].label_from_instance = (
             lambda obj: f"{obj.user.get_full_name()} ({obj.student_id})"
             if obj.user else f"{obj.student_id}"
@@ -155,6 +152,7 @@ class StudentForm(forms.ModelForm):
         fields = [
             "student_id",
             "admission_date",
+            "date_of_birth",
             "current_class",
             "section",
             "guardian_name",
@@ -162,14 +160,20 @@ class StudentForm(forms.ModelForm):
             "is_active",
         ]
         widgets = {
-            "student_id": forms.TextInput(attrs={"class": "form-control"}),
+            "student_id": forms.HiddenInput(), # Auto-generated, hide from form
             "admission_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "date_of_birth": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
             "current_class": forms.Select(attrs={"class": "form-control"}),
             "section": forms.TextInput(attrs={"class": "form-control"}),
             "guardian_name": forms.TextInput(attrs={"class": "form-control"}),
             "guardian_contact": forms.TextInput(attrs={"class": "form-control"}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
+
+def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Optionally, you can set initial values or modify fields here
+        self.fields['email'].required = False
 
 
 # ============================================================
@@ -187,6 +191,17 @@ class UserForm(forms.ModelForm):
             "phone_number": forms.TextInput(attrs={"class": "form-control"}),
             "role": forms.HiddenInput(),  # 👈 hide it from the form
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].required = False
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:  # Only check uniqueness if email is provided
+            if User.objects.filter(email=email).exists():
+                raise forms.ValidationError("A user with this email already exists.")
+        return email
 
 
 

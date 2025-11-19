@@ -100,8 +100,7 @@ def record_payment(request):
 
 
             # 🔹 Automatically set the receiver to the logged-in user
-            payment.received_by = request.user if request.user.is_authenticated else None
-
+            payment.received_by = request.user 
             # 🔹 Save the payment record
             payment.save()
 

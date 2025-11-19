@@ -3,7 +3,6 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block extrahead %}
-  <!-- Optional admin widgets needed for FilteredSelectMultiple -->
   <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
   <script src="{% url 'admin:jsi18n' %}"></script>
   <script src="{% static 'admin/js/core.js' %}"></script>
@@ -12,9 +11,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="form-wrapper">
-  <div class="form-card animate-fadeIn">
-    <h2 class="form-title">{{ title }}</h2>
+<div class="parent-form-container">
+  <div class="parent-form-card">
+    <h2 class="page-heading">{{ title }}</h2>
 
     {% if messages %}
       <div class="messages">
@@ -24,129 +23,179 @@
       </div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data" class="styled-form" novalidate>
+    <form method="post" enctype="multipart/form-data" class="parent-form" novalidate>
       {% csrf_token %}
       {{ form.media }}
 
-      <div class="grid">
-        {# Render fields with labels and help text in a consistent layout #}
+      <div class="form-grid">
         {% for field in form %}
-          <div class="field">
-            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="required">*</span>{% endif %}</label>
+          <div class="form-field">
+            <label for="{{ field.id_for_label }}">
+              {{ field.label }}
+              {% if field.field.required %}
+                <span class="required">*</span>
+              {% endif %}
+            </label>
             {{ field }}
             {% if field.help_text %}
-              <small class="help">{{ field.help_text }}</small>
+              <small class="help-text">{{ field.help_text }}</small>
             {% endif %}
             {% for error in field.errors %}
-              <div class="error">{{ error }}</div>
+              <div class="error-text">{{ error }}</div>
             {% endfor %}
           </div>
         {% endfor %}
       </div>
 
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary">💾 Save Parent</button>
-        <a href="{% url 'manage_parents' %}" class="btn btn-secondary">↩ Back</a>
+      <div class="action-buttons">
+        <button type="submit" class="btn btn-save">💾 Save Parent</button>
+        <a href="{% url 'manage_parents' %}" class="btn btn-cancel">↩ Back</a>
       </div>
     </form>
   </div>
 </div>
 
 <style>
-/* Wrapper + Card */
-.form-wrapper {
+/* === Layout === */
+.parent-form-container {
   display: flex;
   justify-content: center;
-  padding: 3rem 1rem;
-  background: linear-gradient(135deg,#f4f7fb,#fbfdff);
-  min-height: calc(100vh - 120px);
+  align-items: flex-start;
+  background: linear-gradient(145deg, #f5f7fb, #f9fafc);
+  min-height: calc(100vh - 100px);
+  padding: 3rem 1.2rem;
 }
-.form-card {
-  width: 100%;
-  max-width: 820px;
+
+.parent-form-card {
   background: #fff;
-  padding: 2.2rem;
-  border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(16,24,40,0.06);
+  width: 100%;
+  max-width: 850px;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  animation: slideUp 0.4s ease;
 }
-.form-title {
+
+/* === Animations === */
+@keyframes slideUp {
+  from { transform: translateY(15px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* === Heading === */
+.page-heading {
   text-align: center;
-  font-size: 1.5rem;
-  color: #0f172a;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  border-bottom: 1px solid #eef2f7;
-  padding-bottom: 0.75rem;
+  font-size: 1.6rem;
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 1.4rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.8rem;
 }
 
-/* Messages */
-.messages { margin: 0.75rem 0; }
-.message { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; }
-.message-success { background: #ecfdf5; color: #065f46; border: 1px solid #bbf7d0; }
-.message-error { background: #fff1f2; color: #9f1239; border: 1px solid #fecaca; }
+/* === Messages === */
+.messages { margin-bottom: 1rem; }
+.message {
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+}
+.message-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.message-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
 
-/* Form grid */
-.grid {
+/* === Form Grid === */
+.form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.2rem;
 }
-.field { display: flex; flex-direction: column; }
-.field label { font-weight: 600; margin-bottom: 0.35rem; color: #0f172a; }
-.field .required { color: #dc2626; margin-left: 0.25rem; font-weight: 700; }
-.field input[type="text"],
-.field input[type="email"],
-.field input[type="file"],
-.field select,
-.field textarea {
-  padding: 0.65rem 0.9rem;
-  border: 1px solid #e6edf3;
+
+.form-field label {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.3rem;
+  display: inline-block;
+}
+.required { color: #dc2626; }
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #fff;
-  transition: box-shadow .15s ease, border-color .15s ease;
-}
-.field input:focus,
-.field select:focus,
-.field textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 6px 20px rgba(37,99,235,0.06); }
-.help { color: #475569; font-size: .875rem; margin-top: .25rem; }
-
-/* Errors */
-.error { color: #b91c1c; font-size: .875rem; margin-top: .25rem; }
-
-/* Make M2M selector full width and appear as one column area */
-.field select[multiple] {
-  min-height: 180px;
-  width: 100% !important;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Actions */
-.form-actions {
-  margin-top: 1.25rem;
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+/* === Help & Error Text === */
+.help-text { font-size: 0.85rem; color: #6b7280; margin-top: 0.2rem; }
+.error-text { color: #b91c1c; font-size: 0.85rem; margin-top: 0.3rem; }
+
+/* === Multiple Select === */
+.form-field select[multiple] {
+  min-height: 200px;
+  background: #f9fafb;
+}
+
+/* === Buttons === */
+.action-buttons {
   display: flex;
-  gap: 0.6rem;
   justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
 }
+
 .btn {
-  padding: 0.7rem 1.25rem;
-  border-radius: 10px;
-  font-weight: 600;
   border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1.4rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.btn-primary {
-  background: linear-gradient(135deg,#2563eb,#1e40af);
+
+.btn-save {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #fff;
 }
-.btn-secondary {
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+}
+
+.btn-cancel {
   background: #f3f4f6;
   color: #111827;
 }
+.btn-cancel:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
 
-/* Responsive */
-@media (max-width: 800px) {
-  .grid { grid-template-columns: 1fr; }
-  .form-wrapper { padding: 1.5rem; }
+/* === Responsive === */
+@media (max-width: 768px) {
+  .parent-form-card { padding: 1.5rem; }
+  .page-heading { font-size: 1.4rem; }
 }
 </style>
 {% endblock %}

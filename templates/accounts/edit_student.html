@@ -172,7 +172,7 @@ input:focus, select:focus {
         <input type="text" id="full_name" name="full_name" value="{{ student.user.get_full_name }}" required>
 
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email" value="{{ student.user.email }}" required>
+        <input type="email" id="email" name="email" value="{{ student.user.email }}">
 
         <!-- Class (dropdown with datalist) -->
         <label for="current_class">Class:</label>
@@ -203,8 +203,8 @@ input:focus, select:focus {
 
         <!-- Form Actions -->
         <div class="form-actions">
-            <button type="submit" class="btn save">💾 Save Changes</button>
             <a href="{% url 'manage_students' %}" class="btn cancel">❌ Cancel</a>
+            <button type="submit" class="btn save">💾 Save Changes</button>
         </div>
     </form>
 </div>

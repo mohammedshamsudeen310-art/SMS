@@ -20,7 +20,7 @@ class CustomUser(AbstractUser):
         PARENT = "parent", _("Parent / Guardian")
 
     username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
     role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.STUDENT)
     phone_number = models.CharField(
         max_length=15,
@@ -31,7 +31,7 @@ class CustomUser(AbstractUser):
     is_verified = models.BooleanField(default=False)
 
     USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["email"]
+
 
     def __str__(self):
         return f"{self.username} ({self.role})"
@@ -95,7 +95,17 @@ class Accountant(BaseProfile):
 
 
 class Parent(BaseProfile):
+    date_of_birth = None  # Disable inherited field
+
+    @classmethod
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        # Forcefully remove inherited date_of_birth from model metadata
+        if 'date_of_birth' in cls._meta.fields_map:
+            del cls._meta.fields_map['date_of_birth']
+
     occupation = models.CharField(max_length=100, blank=True)
+
     relationship = models.CharField(
         max_length=20,
         choices=[
@@ -106,7 +116,7 @@ class Parent(BaseProfile):
         default="Guardian",
     )
 
-    # 🔹 Allow each parent to have multiple children (students)
+    # Parent can have multiple children
     children = models.ManyToManyField(
         'accounts.Student',
         related_name='parents',
@@ -115,6 +125,7 @@ class Parent(BaseProfile):
 
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.relationship})"
+
 
 
 # ============================================================

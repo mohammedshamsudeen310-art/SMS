@@ -13,8 +13,8 @@
       {% csrf_token %}
       {{ form.as_p }}
       <div class="btn-row">
-        <button type="submit" class="save-btn">💾 Update Classroom</button>
         <a href="{% url 'manage_classrooms' %}" class="cancel-btn">← Cancel</a>
+        <button type="submit" class="save-btn">💾 Update Classroom</button>
       </div>
     </form>
   </div>

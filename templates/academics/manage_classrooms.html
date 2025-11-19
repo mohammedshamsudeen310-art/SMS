@@ -6,10 +6,11 @@
 <div class="classroom-container">
 
   <!-- Header section -->
-  <div class="top-section">
-    <h2>Available Classrooms</h2>
-    <button class="add-btn" onclick="document.getElementById('addForm').classList.toggle('show')">➕ Add Class</button>
-  </div>
+<div class="top-section">
+  <h2>Available Classrooms</h2>
+  <button class="add-btn" onclick="window.location.href='{% url 'add_classroom' %}'">➕ Add Class</button>
+</div>
+
 
   <!-- Add Classroom Form -->
   <div id="addForm" class="classroom-form hidden">

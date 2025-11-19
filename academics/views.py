@@ -232,6 +232,21 @@ def manage_classrooms(request):
         'classrooms': classrooms,
     })
 
+def add_classroom(request):
+    if request.method == 'POST':
+        form = ClassRoomForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Classroom added successfully!")
+            return redirect('manage_classrooms')
+    else:
+        form = ClassRoomForm()
+
+    return render(request, 'academics/add_classroom.html', {
+        'form': form
+    })
+
+
 
 def edit_classroom(request, pk):
     classroom = get_object_or_404(ClassRoom, pk=pk)
