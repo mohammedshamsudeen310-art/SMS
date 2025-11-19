@@ -580,7 +580,7 @@ def export_payment_history_excel(request):
             p.get_payment_method_display(),
             p.reference,
             timezone.localtime(p.date_paid).strftime('%b %d, %Y %I:%M %p'),
-            p.received_by.get_full_name() if p.received_by else 'N/A',
+            p.received_by.get_username() if p.received_by else 'N/A',
         ])
 
     return response
@@ -653,7 +653,7 @@ def export_payment_history_pdf(request):
             p.get_payment_method_display(),
             p.reference or "-",
             timezone.localtime(p.date_paid).strftime("%b %d, %Y"),
-            p.received_by.get_full_name() if p.received_by else "N/A",
+            p.received_by.get_username() if p.received_by else "N/A",
         ])
 
     table = Table(table_data, repeatRows=1, hAlign="LEFT", colWidths=[30, 100, 70, 70, 80, 80, 80])
