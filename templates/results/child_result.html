@@ -4,6 +4,7 @@
 {% block title %}{{ child.user.get_full_name }} Results{% endblock %}
 
 {% block content %}
+
 <style>
 /* ===== Page Title ===== */
 .page-title {
@@ -35,14 +36,22 @@
     box-shadow: 0 0 0 2px rgba(0, 74, 173, 0.2);
 }
 
+/* ===== Scrollable Table Wrapper ===== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
 /* ===== Table Styling ===== */
 .results-table {
     width: 100%;
     border-collapse: collapse;
     background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    min-width: 600px; /* Ensures scroll on small screens */
 }
 
 .results-table th,
@@ -88,19 +97,38 @@
     transform: translateY(-2px);
 }
 
-/* ===== Responsive ===== */
+/* ===== Mobile Responsive ===== */
 @media (max-width: 768px) {
     .filter-form {
         flex-direction: column;
     }
 
+    .page-title {
+        font-size: 1.3rem;
+    }
+
     .results-table th,
     .results-table td {
         font-size: 0.9rem;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.2rem;
+        text-align: center;
     }
 
-    .page-title {
-        font-size: 1.3rem;
+    .filter-form select {
+        font-size: 0.85rem;
+        padding: 7px 10px;
+    }
+
+    .back-btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
     }
 }
 </style>
@@ -127,39 +155,42 @@
     {% endif %}
 </form>
 
-{% comment %}
-Only show results if both session and term are selected
-{% endcomment %}
 {% if selected_session_id and selected_term %}
+
     {% if results %}
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>Subject</th>
-                    <th>Term</th>
-                    <th>Session</th>
-                    <th>Score</th>
-                    <th>Grade</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for result in results %}
-                <tr>
-                    <td>{{ result.subject.name }}</td>
-                    <td>{{ result.term }}</td>
-                    <td>{{ result.session.name }}</td>
-                    <td>{{ result.total_score }}</td>
-                    <td>{{ result.grade }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Term</th>
+                        <th>Session</th>
+                        <th>Score</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result.subject.name }}</td>
+                        <td>{{ result.term }}</td>
+                        <td>{{ result.session.name }}</td>
+                        <td>{{ result.total_score }}</td>
+                        <td>{{ result.grade }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
     {% else %}
         <p class="text-muted">No results found for the selected session and term.</p>
     {% endif %}
+
 {% else %}
     <p class="text-muted">Please select a session and term to view results.</p>
 {% endif %}
 
 <a href="{% url 'child_performance' %}" class="back-btn">← Back</a>
+
 {% endblock %}

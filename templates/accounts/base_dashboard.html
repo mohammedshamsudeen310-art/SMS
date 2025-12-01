@@ -304,10 +304,9 @@
           <a href="{% url 'teacher_dashboard' %}" class="nav-link">🏠 Teacher Dashboard</a>
           <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
           <a href="{% url 'conversation_list' %}" class="nav-link">📨 Messages</a>
-          <a href="#" class="nav-link">🕒 Attendance Sessions</a>
-          <a href="#" class="nav-link">📝 Mark Attendance</a>
+          <a href="{% url 'start_attendance_session' %}" class="nav-link">🕒 Start Session</a>
+          <a href="#" class="nav-link">📝 Take Attendance</a>
           <a href="{% url 'mark_results' %}" class="nav-link">🖊️ Mark Results</a>
-          <a href="#" class="nav-link">📈 Student Results</a>
           
         {% elif user.role == "student" %}
           <a href="{% url 'student_dashboard' %}" class="nav-link">🏠 Student Dashboard</a>
@@ -331,7 +330,7 @@
           <a href="{% url 'conversation_list' %}" class="nav-link">📨 Messages</a>
           <a href="{% url 'profile' %}" class="nav-link">👤 My Profile</a>
           <a href="{% url 'child_performance' %}" class="nav-link">📚 Child Performance</a>
-          <a href="#" class="nav-link">🕒 Attendance</a>
+          <a href="{% url 'parent_attendance' %}" class="nav-link">🕒 Attendance</a>
           <a href="{% url 'parent_payment_history' %}" class="nav-link">💰 Payment History</a>
         {% endif %}
       </nav>

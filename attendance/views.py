@@ -1,49 +1,136 @@
-# from django.shortcuts import render, get_object_or_404, redirect
-# from django.contrib.auth.decorators import login_required
-# from django.utils import timezone
-# from .models import AttendanceSession, AttendanceRecord
-# from .forms import AttendanceSessionForm
-# from academics.models import Enrollment
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden, HttpResponseServerError
+from django.utils.timezone import now
+from .forms import AttendanceSessionForm, AttendanceRecordForm
+from .models import AttendanceSession, AttendanceRecord
+from accounts.models import Teacher, Student
+import logging
 
-# @login_required
-# def create_attendance_session(request):
-#     if request.method == 'POST':
-#         form = AttendanceSessionForm(request.POST)
-#         if form.is_valid():
-#             attendance_session = form.save(commit=False)
-#             attendance_session.teacher = request.user
-#             attendance_session.save()
+logger = logging.getLogger(__name__)
 
-#             # Auto-populate all students in that subject
-#             enrollments = Enrollment.objects.filter(subject=attendance_session.subject)
-#             for enroll in enrollments:
-#                 AttendanceRecord.objects.create(
-#                     session=attendance_session,
-#                     student=enroll.student,
-#                     status='Absent'  # default
-#                 )
+# =========================================
+# 1️⃣ Start Attendance Session
+# =========================================
+@login_required
+def start_attendance_session(request):
+    try:
+        user = request.user
 
-#             return redirect('mark_attendance', session_id=attendance_session.id)
-#     else:
-#         form = AttendanceSessionForm()
-#     return render(request, 'attendance/create_session.html', {'form': form})
+        if not hasattr(user, "teacher_profile"):
+            return HttpResponseForbidden("Only teachers can start attendance sessions.")
+
+        teacher = user.teacher_profile
+
+        if request.method == "POST":
+            form = AttendanceSessionForm(request.POST, teacher=teacher)
+            if form.is_valid():
+                # Create or get session for same teacher/subject/classroom/date
+                session, created = AttendanceSession.objects.get_or_create(
+                    teacher=teacher,
+                    subject=form.cleaned_data["subject"],
+                    classroom=form.cleaned_data["classroom"],
+                    date=form.cleaned_data["date"]
+                )
+                return redirect("take_attendance", session_id=session.id)
+        else:
+            form = AttendanceSessionForm(teacher=teacher)
+
+        return render(request, "attendance/start_session.html", {"form": form})
+
+    except Exception as e:
+        logger.error(f"Error in start_attendance_session: {e}", exc_info=True)
+        return HttpResponseServerError("An unexpected error occurred while starting the session.")
 
 
-# @login_required
-# def mark_attendance(request, session_id):
-#     session = get_object_or_404(AttendanceSession, id=session_id)
-#     records = session.records.select_related('student').all()
+# =========================================
+# 2️⃣ Take Attendance
+# =========================================
+@login_required
+def take_attendance(request, session_id):
+    try:
+        user = request.user
 
-#     if request.method == 'POST':
-#         for record in records:
-#             status = request.POST.get(str(record.id))
-#             record.status = status
-#             record.save()
-#         session.end_time = timezone.now()
-#         session.save()
-#         return redirect('attendance_list')
+        if not hasattr(user, "teacher_profile"):
+            return HttpResponseForbidden("Only teachers can take attendance.")
 
-#     return render(request, 'attendance/mark_attendance.html', {
-#         'session': session,
-#         'records': records
-#     })
+        session = get_object_or_404(AttendanceSession, id=session_id, teacher=user.teacher_profile)
+        form = AttendanceRecordForm(request.POST or None, session=session)
+
+        if request.method == "POST" and form.is_valid():
+            for field_name, value in form.cleaned_data.items():
+                if field_name.startswith("status_"):
+                    student_id = int(field_name.split("_")[1])
+                    student = Student.objects.get(id=student_id)
+
+                    AttendanceRecord.objects.update_or_create(
+                        session=session,
+                        student=student,
+                        defaults={"status": value}
+                    )
+            return redirect("teacher_dashboard")  # Redirect to teacher dashboard after saving
+
+        return render(request, "attendance/take_attendance.html", {"form": form, "session": session})
+
+    except Exception as e:
+        logger.error(f"Error in take_attendance: {e}", exc_info=True)
+        return HttpResponseServerError("An unexpected error occurred while taking attendance.")
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
+from accounts.models import Parent, Student
+from .models import AttendanceRecord
+
+
+@login_required
+def parent_attendance(request):
+    user = request.user
+
+    if not hasattr(user, "parent_profile"):
+        return HttpResponseForbidden("Only parents can access this page.")
+
+    parent = user.parent_profile
+    children = parent.children.all()  # Your parent → children relationship
+
+    data = []
+
+    for child in children:
+        records = AttendanceRecord.objects.filter(student=child)
+
+        summary = {
+            "present": records.filter(status="present").count(),
+            "absent": records.filter(status="absent").count(),
+            "late": records.filter(status="late").count(),
+            "excused": records.filter(status="excused").count(),
+        }
+
+        data.append({
+            "child": child,
+            "summary": summary,
+        })
+
+    return render(request, "attendance/parent_attendance.html", {
+        "children_data": data
+    })
+
+
+@login_required
+def parent_child_attendance_detail(request, child_id):
+    user = request.user
+
+    if not hasattr(user, "parent_profile"):
+        return HttpResponseForbidden("Only parents can access this page.")
+
+    parent = user.parent_profile
+    child = get_object_or_404(Student, id=child_id)
+
+    if child not in parent.children.all():
+        return HttpResponseForbidden("This child is not linked to your account.")
+
+    records = AttendanceRecord.objects.filter(student=child).order_by("-session__date")
+
+    return render(request, "attendance/parent_attendance_detail.html", {
+        "child": child,
+        "records": records,
+    })

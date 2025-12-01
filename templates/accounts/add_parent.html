@@ -3,11 +3,11 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block extrahead %}
-  <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
-  <script src="{% url 'admin:jsi18n' %}"></script>
-  <script src="{% static 'admin/js/core.js' %}"></script>
-  <script src="{% static 'admin/js/SelectBox.js' %}"></script>
-  <script src="{% static 'admin/js/SelectFilter2.js' %}"></script>
+<link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+<script src="{% url 'admin:jsi18n' %}"></script>
+<script src="{% static 'admin/js/core.js' %}"></script>
+<script src="{% static 'admin/js/SelectBox.js' %}"></script>
+<script src="{% static 'admin/js/SelectFilter2.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -16,11 +16,11 @@
     <h2 class="page-heading">{{ title }}</h2>
 
     {% if messages %}
-      <div class="messages">
-        {% for msg in messages %}
-          <div class="message message-{{ msg.tags }}">{{ msg }}</div>
-        {% endfor %}
-      </div>
+    <div class="messages">
+      {% for msg in messages %}
+      <div class="message message-{{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
     {% endif %}
 
     <form method="post" enctype="multipart/form-data" class="parent-form" novalidate>
@@ -29,21 +29,26 @@
 
       <div class="form-grid">
         {% for field in form %}
-          <div class="form-field">
-            <label for="{{ field.id_for_label }}">
-              {{ field.label }}
-              {% if field.field.required %}
-                <span class="required">*</span>
-              {% endif %}
-            </label>
-            {{ field }}
-            {% if field.help_text %}
-              <small class="help-text">{{ field.help_text }}</small>
+        <div class="form-field">
+          <label for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}
+            <span class="required">*</span>
             {% endif %}
-            {% for error in field.errors %}
-              <div class="error-text">{{ error }}</div>
-            {% endfor %}
+          </label>
+
+          <div class="field-wrapper">
+            {{ field }}
           </div>
+
+          {% if field.help_text %}
+          <small class="help-text">{{ field.help_text }}</small>
+          {% endif %}
+
+          {% for error in field.errors %}
+          <div class="error-text">{{ error }}</div>
+          {% endfor %}
+        </div>
         {% endfor %}
       </div>
 
@@ -60,142 +65,158 @@
 .parent-form-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  background: linear-gradient(145deg, #f5f7fb, #f9fafc);
-  min-height: calc(100vh - 100px);
-  padding: 3rem 1.2rem;
+  background: linear-gradient(to bottom right, #eef2ff, #f8fafc);
+  padding: 3rem 1rem;
+  min-height: calc(100vh - 120px);
 }
 
 .parent-form-card {
-  background: #fff;
+  background: #ffffff;
   width: 100%;
-  max-width: 850px;
-  border-radius: 16px;
-  padding: 2.5rem;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
-  animation: slideUp 0.4s ease;
+  max-width: 880px;
+  border-radius: 18px;
+  padding: 2.8rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  animation: fadeIn 0.35s ease-out;
 }
 
-/* === Animations === */
-@keyframes slideUp {
-  from { transform: translateY(15px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+/* === Animation === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* === Heading === */
+/* === Title === */
 .page-heading {
   text-align: center;
-  font-size: 1.6rem;
-  color: #1e293b;
+  font-size: 1.7rem;
   font-weight: 700;
-  margin-bottom: 1.4rem;
-  border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 0.8rem;
+  color: #1e293b;
+  margin-bottom: 1.8rem;
+  letter-spacing: -0.4px;
 }
 
 /* === Messages === */
-.messages { margin-bottom: 1rem; }
+.messages {
+  margin-bottom: 1.2rem;
+}
 .message {
   border-radius: 10px;
-  padding: 0.8rem 1rem;
-  font-weight: 500;
-  margin-bottom: 0.6rem;
+  padding: 0.9rem 1.1rem;
+  font-weight: 600;
+  border-left-width: 5px;
 }
 .message-success {
   background: #ecfdf5;
   color: #065f46;
-  border: 1px solid #a7f3d0;
+  border-left: 5px solid #10b981;
 }
 .message-error {
   background: #fef2f2;
   color: #b91c1c;
-  border: 1px solid #fecaca;
+  border-left: 5px solid #ef4444;
 }
 
-/* === Form Grid === */
+/* === Form === */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.3rem 1.5rem;
 }
 
 .form-field label {
   font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.3rem;
-  display: inline-block;
+  color: #111827;
+  margin-bottom: 0.35rem;
+  display: block;
 }
-.required { color: #dc2626; }
+
+.required {
+  color: #dc2626;
+}
 
 .form-field input,
 .form-field select,
 .form-field textarea {
   width: 100%;
-  padding: 0.7rem 0.9rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 0.75rem 0.95rem;
+  font-size: 0.94rem;
+  border-radius: 9px;
+  border: 1px solid #d1d5db;
   background: #fff;
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.22s ease;
 }
 
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
-  outline: none;
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  outline: none;
 }
 
-/* === Help & Error Text === */
-.help-text { font-size: 0.85rem; color: #6b7280; margin-top: 0.2rem; }
-.error-text { color: #b91c1c; font-size: 0.85rem; margin-top: 0.3rem; }
-
-/* === Multiple Select === */
+/* Large multiple select */
 .form-field select[multiple] {
-  min-height: 200px;
-  background: #f9fafb;
+  min-height: 220px;
+  border-radius: 12px;
+}
+
+/* Help + Errors */
+.help-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+.error-text {
+  color: #b91c1c;
+  font-size: 0.84rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
 }
 
 /* === Buttons === */
 .action-buttons {
+  margin-top: 2rem;
   display: flex;
   justify-content: center;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+  gap: 1rem;
 }
 
 .btn {
-  border: none;
-  border-radius: 10px;
-  padding: 0.75rem 1.4rem;
-  font-weight: 600;
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  border: none;
 }
 
 .btn-save {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #fff;
+  color: white;
 }
 .btn-save:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+  box-shadow: 0 8px 18px rgba(37,99,235,0.25);
 }
 
 .btn-cancel {
   background: #f3f4f6;
-  color: #111827;
+  color: #1f2937;
 }
 .btn-cancel:hover {
   background: #e5e7eb;
   transform: translateY(-2px);
 }
 
-/* === Responsive === */
-@media (max-width: 768px) {
-  .parent-form-card { padding: 1.5rem; }
-  .page-heading { font-size: 1.4rem; }
+/* Responsive */
+@media(max-width: 640px) {
+  .parent-form-card {
+    padding: 1.7rem;
+  }
+  .page-heading {
+    font-size: 1.45rem;
+  }
 }
 </style>
 {% endblock %}

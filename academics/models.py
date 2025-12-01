@@ -89,35 +89,6 @@ class Enrollment(models.Model):
 
 
 # ===============================
-# 🔹 ATTENDANCE
-# ===============================
-class AttendanceSession(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
-    session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True, blank=True)
-    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'role': 'teacher'})
-    date = models.DateField(default=timezone.now)
-    start_time = models.TimeField(default=timezone.now)
-    end_time = models.TimeField(blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.subject.name} - {self.date}"
-
-
-class AttendanceRecord(models.Model):
-    session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE, related_name="records")
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10, choices=[('Present', 'Present'), ('Absent', 'Absent')])
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("session", "student")
-
-    def __str__(self):
-        return f"{self.student} - {self.status}"
-
-
-# ===============================
 # 🔹 GRADES / RESULTS
 # ===============================
 TERM_CHOICES = [

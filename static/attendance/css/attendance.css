@@ -1,0 +1,128 @@
+/* Minimal professional stylesheet — drop into static/attendance/css/attendance.css */
+:root{
+  --bg:#f6f8fa;
+  --card:#ffffff;
+  --muted:#657786;
+  --accent:#0d6efd;
+  --border:#e6e9ee;
+  --radius:10px;
+  --shadow: 0 6px 18px rgba(16,24,40,0.06);
+  --max-width:1100px;
+  --gap:16px;
+}
+
+.attendance-container{
+  max-width: var(--max-width);
+  margin: 26px auto;
+  padding: 18px;
+}
+
+.attendance-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom: 12px;
+}
+
+.attendance-title{
+  font-size:1.3rem;
+  margin:0;
+  color:#111827;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+
+/* grid for forms */
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--gap);
+}
+
+.form-field label{
+  display:block;
+  font-weight:600;
+  margin-bottom:6px;
+  color:#0f172a;
+}
+
+.form-field input[type="text"], .form-field select, .form-field textarea, .form-field input[type="date"]{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  box-sizing:border-box;
+}
+
+.form-field.full { grid-column: 1 / -1; }
+
+/* table */
+.attendance-table, .summary-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+}
+
+.attendance-table th, .attendance-table td, .summary-table th, .summary-table td{
+  padding:10px 8px;
+  border-bottom:1px solid #f1f5f9;
+  text-align:left;
+  font-size:0.95rem;
+}
+
+.attendance-table thead th{
+  background: #fbfbfd;
+  position:sticky;
+  top:0;
+}
+
+.note-input{
+  width:100%;
+  padding:6px 8px;
+  border-radius:6px;
+  border:1px solid var(--border);
+}
+
+.form-actions{
+  display:flex;
+  gap:12px;
+  margin-top:14px;
+}
+
+.btn{
+  display:inline-block;
+  padding:8px 14px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+}
+.btn-primary{
+  background:var(--accent);
+  color:white;
+}
+.btn-outline{
+  background:transparent;
+  color:var(--accent);
+  border:1px solid var(--accent);
+}
+.btn-muted{
+  background:#f2f4f7;
+  color:#111827;
+}
+.muted { color:var(--muted); text-align:center; padding:14px; }
+
+/* responsiveness */
+@media (max-width:720px){
+  .attendance-table th:nth-child(4), .attendance-table td:nth-child(4),
+  .attendance-table th:nth-child(5), .attendance-table td:nth-child(5),
+  .attendance-table th:nth-child(6), .attendance-table td:nth-child(6){
+    display:none;
+  }
+}

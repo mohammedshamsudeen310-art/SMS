@@ -1,0 +1,37 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Attendance Records{% endblock %}
+{% block header %}📅 Attendance for {{ child.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<style>
+.record-item {
+  padding: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  margin-bottom: 1rem;
+}
+.status-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 8px;
+  color: white;
+}
+.present { background: #16a34a; }
+.absent { background: #dc2626; }
+.late { background: #f59e0b; }
+.excused { background: #475569; }
+</style>
+
+{% for rec in records %}
+  <div class="record-item">
+    <b>{{ rec.session.date }}</b> —
+    {{ rec.session.subject.name }}
+
+    <span class="status-badge {{ rec.status }}">
+      {{ rec.get_status_display }}
+    </span>
+  </div>
+{% empty %}
+  <p>No attendance records yet.</p>
+{% endfor %}
+{% endblock %}

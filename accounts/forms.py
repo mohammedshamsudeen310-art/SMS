@@ -8,6 +8,38 @@ from .models import (
     Accountant,
 )
 
+class AutoEmailGenerationMixin:
+    """
+    Ensures that ANY user created/updated will always have a unique email,
+    even if none was provided.
+    """
+    def generate_email(self, base_name):
+        base = slugify(base_name) or "user"
+        domain = "autogen.local"
+        email = f"{base}@{domain}"
+
+        counter = 1
+        while User.objects.filter(email__iexact=email).exists():
+            email = f"{base}{counter}@{domain}"
+            counter += 1
+
+        return email
+
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip()
+        username = (self.cleaned_data.get("username") or "").strip()
+        fullname = (self.cleaned_data.get("fullname") or "").strip()
+
+        if email:
+            # Ensure uniqueness ONLY if email provided manually
+            if User.objects.filter(email__iexact=email).exists():
+                raise forms.ValidationError("This email is already in use.")
+            return email
+
+        # 🧠 Auto-generate based on username → fullname → fallback
+        base = username or fullname or "user"
+        return self.generate_email(base)
+    
 # ============================================================
 # 🔹 1️⃣ Base Profile Form (Shared Fields)
 # ============================================================
@@ -39,6 +71,7 @@ class AdminProfileForm(BaseProfileForm):
 class TeacherProfileForm(BaseProfileForm):
     class Meta(BaseProfileForm.Meta):
         model = Teacher
+        exclude=['date_of_birth']
         fields = BaseProfileForm.Meta.fields + [
             "staff_id",
             "qualification",
@@ -68,79 +101,32 @@ class AccountantProfileForm(BaseProfileForm):
 from django import forms
 from .models import Parent, Student
 from django.contrib.auth.models import User  # ✅ To handle username/email linkage
-class ParentProfileForm(forms.ModelForm):
-    username = forms.CharField(
-        max_length=150,
-        required=True,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Enter username'
-        }),
-        label="Username"
-    )
-    email = forms.EmailField(
-        required=False,
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Enter email address'
-        }),
-        label="Email Address"
-    )
-    fullname = forms.CharField(
-        max_length=150,
-        required=True,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Enter full name'
-        }),
-        label="Full Name"
-    )
+
+class ParentProfileForm(AutoEmailGenerationMixin, forms.ModelForm):
+    username = forms.CharField(max_length=150, required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    fullname = forms.CharField(max_length=150, required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     children = forms.ModelMultipleChoiceField(
-        queryset=Student.objects.select_related('user').all().order_by('user__first_name'),
+        queryset=Student.objects.select_related('user').all(),
         required=False,
-        widget=forms.SelectMultiple(attrs={
-            'class': 'multi-select',
-            'data-placeholder': 'Search and select children...'
-        }),
-        label="Children (Students)"
+        widget=forms.SelectMultiple(attrs={'class': 'multi-select'})
     )
 
     class Meta:
         model = Parent
         fields = [
-            'username',
-            'email',
-            'fullname',
-            'gender',
-            'address',
-            'photo',
-            'occupation',
-            'relationship',
-            'children',
+            'username', 'email', 'fullname',
+            'gender', 'address', 'photo',
+            'occupation', 'relationship', 'children',
         ]
-        widgets = {
-            'gender': forms.Select(attrs={'class': 'form-select'}),
-            'address': forms.TextInput(attrs={
-                'class': 'form-control', 'placeholder': 'Enter home address'
-            }),
-            'photo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-            'occupation': forms.TextInput(attrs={
-                'class': 'form-control', 'placeholder': 'Parent occupation'
-            }),
-            'relationship': forms.Select(attrs={'class': 'form-select'}),
-        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # 💥 Totally remove the date_of_birth field (fixes your issue)
         self.fields.pop("date_of_birth", None)
-
-        self.fields['children'].label_from_instance = (
-            lambda obj: f"{obj.user.get_full_name()} ({obj.student_id})"
-            if obj.user else f"{obj.student_id}"
-        )
 
 
 # ============================================================
@@ -179,29 +165,14 @@ def __init__(self, *args, **kwargs):
 # ============================================================
 # 🔹 4️⃣ User Account Info Form (Shared)
 # ============================================================
-class UserForm(forms.ModelForm):
+class UserForm(AutoEmailGenerationMixin, forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ["first_name", "last_name", "username", "email", "phone_number", "role"]
-        widgets = {
-            "first_name": forms.TextInput(attrs={"class": "form-control"}),
-            "last_name": forms.TextInput(attrs={"class": "form-control"}),
-            "username": forms.TextInput(attrs={"class": "form-control"}),
-            "email": forms.EmailInput(attrs={"class": "form-control"}),
-            "phone_number": forms.TextInput(attrs={"class": "form-control"}),
-            "role": forms.HiddenInput(),  # 👈 hide it from the form
-        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["email"].required = False
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if email:  # Only check uniqueness if email is provided
-            if User.objects.filter(email=email).exists():
-                raise forms.ValidationError("A user with this email already exists.")
-        return email
 
 
 
@@ -240,4 +211,9 @@ class CustomPasswordChangeForm(PasswordChangeForm):
     )
 
 
+
+from django.utils.text import slugify
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 

@@ -1,0 +1,57 @@
+{% extends "accounts/base_dashboard.html" %}
+{% block title %}Attendance Overview{% endblock %}
+{% block header %}🕒 Attendance Overview{% endblock %}
+
+{% block content %}
+<style>
+.attendance-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+.summary-box {
+  background: #1e3a8a;
+  color: #fff;
+  text-align: center;
+  padding: 1rem;
+  border-radius: 12px;
+}
+.summary-box.absent { background: #dc2626; }
+.summary-box.late { background: #f59e0b; }
+.summary-box.excused { background: #475569; }
+.view-btn {
+  margin-top: 1rem;
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background: #1976d2;
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+}
+</style>
+
+{% for data in children_data %}
+<div class="attendance-card">
+  <h3>{{ data.child.user.get_full_name }}</h3>
+  <p>{{ data.child.classroom.name }}</p>
+
+  <div class="summary-grid">
+    <div class="summary-box">Present<br><b>{{ data.summary.present }}</b></div>
+    <div class="summary-box absent">Absent<br><b>{{ data.summary.absent }}</b></div>
+    <div class="summary-box late">Late<br><b>{{ data.summary.late }}</b></div>
+    <div class="summary-box excused">Excused<br><b>{{ data.summary.excused }}</b></div>
+  </div>
+
+  <a class="view-btn" href="{% url 'parent_attendance_detail' data.child.id %}">
+    View Daily Records →
+  </a>
+</div>
+{% endfor %}
+{% endblock %}
