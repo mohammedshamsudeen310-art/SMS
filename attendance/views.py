@@ -46,6 +46,8 @@ def start_attendance_session(request):
 # =========================================
 # 2️⃣ Take Attendance
 # =========================================
+from django.contrib import messages
+
 @login_required
 def take_attendance(request, session_id):
     try:
@@ -54,7 +56,12 @@ def take_attendance(request, session_id):
         if not hasattr(user, "teacher_profile"):
             return HttpResponseForbidden("Only teachers can take attendance.")
 
-        session = get_object_or_404(AttendanceSession, id=session_id, teacher=user.teacher_profile)
+        session = get_object_or_404(
+            AttendanceSession,
+            id=session_id,
+            teacher=user.teacher_profile
+        )
+
         form = AttendanceRecordForm(request.POST or None, session=session)
 
         if request.method == "POST" and form.is_valid():
@@ -68,13 +75,22 @@ def take_attendance(request, session_id):
                         student=student,
                         defaults={"status": value}
                     )
-            return redirect("teacher_dashboard")  # Redirect to teacher dashboard after saving
 
-        return render(request, "attendance/take_attendance.html", {"form": form, "session": session})
+            # ✅ SUCCESS MESSAGE
+            messages.success(request, "Attendance submitted successfully ✔️")
+
+            return redirect("teacher_dashboard")
+
+        return render(request, "attendance/take_attendance.html", {
+            "form": form,
+            "session": session
+        })
 
     except Exception as e:
         logger.error(f"Error in take_attendance: {e}", exc_info=True)
-        return HttpResponseServerError("An unexpected error occurred while taking attendance.")
+        return HttpResponseServerError(
+            "An unexpected error occurred while taking attendance."
+        )
 
 
 from django.contrib.auth.decorators import login_required
