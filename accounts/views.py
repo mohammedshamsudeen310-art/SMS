@@ -924,108 +924,161 @@ def import_teachers(request):
 
 
 # ==========================================
-# ✏️ EDIT TEACHER & STUDENT
+# ✏️ EDIT TEACHER
 @login_required
 def edit_teacher(request, pk):
     teacher = get_object_or_404(Teacher, pk=pk)
-    user = teacher.user  # linked CustomUser
+    user = teacher.user
 
     if request.method == "POST":
         user_form = UserForm(request.POST, instance=user)
         teacher_form = TeacherProfileForm(request.POST, instance=teacher)
-        new_password = request.POST.get("new_password")  # optional password
+
+        new_password = request.POST.get("new_password")
         confirm_password = request.POST.get("confirm_password")
-        is_active = request.POST.get("is_active")  # Active checkbox
+        is_active = request.POST.get("is_active")
 
         if user_form.is_valid() and teacher_form.is_valid():
+
+            # --- USERNAME CHECK ---
+            username = user_form.cleaned_data.get("username").strip()
+            if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+                messages.error(request, "❌ Username already exists.")
+                return render(request, "accounts/edit_teacher.html", {
+                    "user_form": user_form,
+                    "teacher_form": teacher_form,
+                    "teacher": teacher,
+                })
+
+            # --- EMAIL CHECK ---
+            email = user_form.cleaned_data.get("email", "").strip()
+            email = email if email != "" else ""  # safe blank email
+
+            if email:
+                if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+                    messages.error(request, "❌ Email already exists.")
+                    return render(request, "accounts/edit_teacher.html", {
+                        "user_form": user_form,
+                        "teacher_form": teacher_form,
+                        "teacher": teacher,
+                    })
+
+            # --- UPDATE USER ---
+            user.username = username
+            user.email = email
             user_form.save()
+
+            # --- UPDATE TEACHER PROFILE ---
             teacher_form.save()
 
-            # Handle optional password reset
+            # --- OPTIONAL PASSWORD RESET ---
             if new_password:
                 if new_password == confirm_password:
                     user.set_password(new_password)
-                    user.save(update_fields=["password"])
-                    messages.info(request, f"🔑 Password for {user.username} has been reset successfully.")
+                    user.save()
+                    messages.info(request, f"🔑 Password reset for {user.username}.")
                 else:
                     messages.error(request, "❌ Passwords do not match.")
-                    return render(
-                        request,
-                        "accounts/edit_teacher.html",
-                        {
-                            "user_form": user_form,
-                            "teacher_form": teacher_form,
-                            "teacher": teacher,
-                        },
-                    )
+                    return render(request, "accounts/edit_teacher.html", {
+                        "user_form": user_form,
+                        "teacher_form": teacher_form,
+                        "teacher": teacher,
+                    })
 
-            # ✅ Handle active toggle
+            # --- ACTIVE STATUS ---
             user.is_active = bool(is_active)
             user.save(update_fields=["is_active"])
 
-            messages.success(request, "✅ Teacher and user details updated successfully.")
+            messages.success(request, "✅ Teacher updated successfully.")
             return redirect("manage_teachers")
 
     else:
         user_form = UserForm(instance=user)
         teacher_form = TeacherProfileForm(instance=teacher)
 
-    return render(
-        request,
-        "accounts/edit_teacher.html",
-        {"user_form": user_form, "teacher_form": teacher_form, "teacher": teacher},
-    )
+    return render(request, "accounts/edit_teacher.html", {
+        "user_form": user_form,
+        "teacher_form": teacher_form,
+        "teacher": teacher,
+    })
 
 
 
 from academics.models import ClassRoom  # Make sure this import matches your project
+import logging
+logger = logging.getLogger(__name__)
 
 @login_required
 def edit_student(request, pk):
-    student = get_object_or_404(Student, pk=pk)
-    user = student.user
+    try:
+        student = get_object_or_404(Student, pk=pk)
+        user = student.user
 
-    # GET classrooms for datalist
-    classrooms = ClassRoom.objects.all()
+        # GET classrooms for datalist
+        classrooms = ClassRoom.objects.all()
 
-    if request.method == "POST":
-        full_name = request.POST.get("full_name")
-        email = request.POST.get("email")
-        current_class_name = request.POST.get("current_class")  # string from input
-        new_password = request.POST.get("new_password")
-        confirm_password = request.POST.get("confirm_password")
-        is_active = request.POST.get("is_active")
+        if request.method == "POST":
+            full_name = request.POST.get("full_name")
+            email = request.POST.get("email")
+            current_class_name = request.POST.get("current_class")  # string from input
+            new_password = request.POST.get("new_password")
+            confirm_password = request.POST.get("confirm_password")
+            is_active = request.POST.get("is_active")
 
-        # Update user info
-        name_parts = full_name.split(" ", 1)
-        user.first_name = name_parts[0]
-        user.last_name = name_parts[1] if len(name_parts) > 1 else ""
-        user.email = email
+            # Update user info
+            name_parts = full_name.split(" ", 1)
+            user.first_name = name_parts[0]
+            user.last_name = name_parts[1] if len(name_parts) > 1 else ""
 
-        # Optional password reset
-        if new_password:
-            if new_password == confirm_password:
-                user.set_password(new_password)
-                messages.info(request, f"🔑 Password for {user.username} has been reset successfully.")
+            # Fix: allow blank email without unique constraint error
+            if not email or email.strip() == "":
+                user.email = None
             else:
-                messages.error(request, "❌ Passwords do not match.")
-                return render(request, "accounts/edit_student.html", {"student": student, "classrooms": classrooms})
+                user.email = email
 
-        # Active toggle
-        user.is_active = bool(is_active)
-        user.save()
 
-        # 🔹 Get or create ClassRoom instance safely
-        classroom, _ = ClassRoom.objects.get_or_create(name=current_class_name)
-        student.current_class = classroom
-        student.save()
+            # Optional password reset
+            if new_password:
+                if new_password == confirm_password:
+                    user.set_password(new_password)
+                    messages.info(request, f"🔑 Password for {user.username} has been reset successfully.")
+                else:
+                    messages.error(request, "❌ Passwords do not match.")
+                    return render(request, "accounts/edit_student.html", {
+                        "student": student,
+                        "classrooms": classrooms
+                    })
 
-        messages.success(request, "✅ Student and user details updated successfully.")
-        return redirect("manage_students")
+            # Active toggle
+            user.is_active = bool(is_active)
+            user.save()
 
-    # GET request
-    context = {"student": student, "classrooms": classrooms}
-    return render(request, "accounts/edit_student.html", context)
+            # Get or create ClassRoom safely
+            classroom, _ = ClassRoom.objects.get_or_create(name=current_class_name)
+            student.current_class = classroom
+            student.save()
+
+            messages.success(request, "✅ Student and user details updated successfully.")
+            return redirect("manage_students")
+
+        # GET request
+        context = {"student": student, "classrooms": classrooms}
+        return render(request, "accounts/edit_student.html", context)
+
+    except Exception as e:
+        # Log full error details
+        logger.error(f"Error in edit_student: {e}", exc_info=True)
+
+        # Show developer-friendly error message on frontend
+        messages.error(request, f"⚠️ An unexpected error occurred: {str(e)}")
+
+        # Return page with the error visible
+        return render(request, "accounts/edit_student.html", {
+            "student": student,
+            "classrooms": classrooms,
+            "error_message": str(e)
+        })
+
 
 
 

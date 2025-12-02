@@ -20,7 +20,7 @@ class CustomUser(AbstractUser):
         PARENT = "parent", _("Parent / Guardian")
 
     username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True, blank=True, null=True)
+    email = models.EmailField(unique=False, blank=True, null=True)
     role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.STUDENT)
     phone_number = models.CharField(
         max_length=15,
