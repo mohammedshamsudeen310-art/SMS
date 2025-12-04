@@ -246,6 +246,10 @@ def view_my_results(request):
 from xhtml2pdf import pisa
 from collections import defaultdict
 
+from xhtml2pdf import pisa
+from collections import defaultdict
+from django.utils.text import slugify
+
 @login_required
 def download_result(request):
     student = request.user.student
@@ -292,7 +296,7 @@ def download_result(request):
                     "average": term_average
                 })
 
-            # Sort terms by term_order
+            # Sort terms
             term_list = sorted(term_list, key=lambda t: term_order.get(t["term_name"], 99))
 
             results_data.append({
@@ -310,13 +314,25 @@ def download_result(request):
     # PDF generation
     template_path = 'results/result_pdf.html'
     response = HttpResponse(content_type='application/pdf')
+
+    # 🔥 Create clean PDF filename: username → full name → id
+    safe_name = slugify(
+        student.user.username
+        or student.user.get_username()
+        or str(student.id)
+    )
+
     if selected_session_id:
-        response['Content-Disposition'] = f'attachment; filename="{student.user.get_full_name}_session_result.pdf"'
+        filename = f"{safe_name}_session_result.pdf"
     else:
-        response['Content-Disposition'] = f'attachment; filename="{student.user.get_full_name}_full_result.pdf"'
+        filename = f"{safe_name}_full_result.pdf"
+
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     html = render(request, template_path, context).content.decode('utf-8')
     pisa_status = pisa.CreatePDF(html, dest=response)
+
     if pisa_status.err:
         return HttpResponse('Error generating PDF', status=500)
+
     return response
