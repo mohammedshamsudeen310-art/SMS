@@ -103,12 +103,22 @@ from .models import Parent, Student
 from django.contrib.auth.models import User  # ✅ To handle username/email linkage
 
 class ParentProfileForm(AutoEmailGenerationMixin, forms.ModelForm):
-    username = forms.CharField(max_length=150, required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control'}))
-    email = forms.EmailField(required=False,
-        widget=forms.EmailInput(attrs={'class': 'form-control'}))
-    fullname = forms.CharField(max_length=150, required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+
+    fullname = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
 
     children = forms.ModelMultipleChoiceField(
         queryset=Student.objects.select_related('user').all(),
@@ -127,6 +137,12 @@ class ParentProfileForm(AutoEmailGenerationMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields.pop("date_of_birth", None)
+        self.fields['email'].required = False
+
+    # 🔥 FIX EMAIL VALIDATION ISSUES COMPLETELY
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        return email or None   # ✔ allow blank, duplicates, anything
 
 
 # ============================================================
@@ -174,6 +190,11 @@ class UserForm(AutoEmailGenerationMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["email"].required = False
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        return email or None   # ✔ allow blank, invalid format, duplicates
+
+
 
 
 
@@ -182,7 +203,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from .models import BaseProfile  # adjust based on your actual profile model
 
 class ProfileUpdateForm(forms.ModelForm):
-    email = forms.EmailField(required=True)
+    email = forms.EmailField(required=False)
 
     class Meta:
         model = BaseProfile
@@ -195,6 +216,10 @@ class UserEmailForm(forms.ModelForm):
         widgets = {
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].required = False
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(

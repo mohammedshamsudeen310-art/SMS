@@ -296,91 +296,107 @@ User = get_user_model()
 
 @login_required
 def add_parent(request):
-    if request.method == "POST":
-        form = ParentProfileForm(request.POST, request.FILES)
+    try:
+        if request.method == "POST":
+            form = ParentProfileForm(request.POST, request.FILES)
 
-        if form.is_valid():
-            try:
-                with transaction.atomic():
+            if form.is_valid():
+                try:
+                    with transaction.atomic():
 
-                    username_input = form.cleaned_data.get("username", "").strip()
-                    email = form.cleaned_data.get("email", "").strip() or None   # ✔ allow empty
-                    full_name = (
-                        form.cleaned_data.get("fullname")
-                        or form.cleaned_data.get("name")
-                        or "Parent User"
-                    ).strip()
+                        username_input = form.cleaned_data.get("username", "").strip()
+                        email = form.cleaned_data.get("email", "").strip() or None   
+                        full_name = (
+                            form.cleaned_data.get("fullname")
+                            or form.cleaned_data.get("name")
+                            or "Parent User"
+                        ).strip()
 
-                    # Split full name
-                    parts = full_name.split()
-                    first_name = parts[0] if parts else ""
-                    last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+                        # Split full name
+                        parts = full_name.split()
+                        first_name = parts[0] if parts else ""
+                        last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
 
-                    # Build unique username
-                    base = slugify(username_input) or slugify(full_name) or "parent"
-                    username = base
-                    counter = 1
+                        # Build unique username
+                        base = slugify(username_input) or slugify(full_name) or "parent"
+                        username = base
+                        counter = 1
 
-                    while User.objects.filter(username=username).exists():
-                        username = f"{base}{counter}"
-                        counter += 1
+                        while User.objects.filter(username=username).exists():
+                            username = f"{base}{counter}"
+                            counter += 1
 
-                    # Email uniqueness only if provided
-                    if email and User.objects.filter(email__iexact=email).exists():
-                        messages.error(request, "This email is already linked to another user.")
-                        return render(request, "accounts/parent_form.html", {
-                            "form": form,
-                            "title": "Add Parent"
-                        })
+                        # Email uniqueness only if provided
+                        if email and User.objects.filter(email__iexact=email).exists():
+                            messages.error(request, "❌ This email is already linked to another user.")
+                            return render(request, "accounts/parent_form.html", {
+                                "form": form,
+                                "title": "Add Parent"
+                            })
 
-                    # Create user
-                    temp_password = secrets.token_urlsafe(8)
+                        # Create temporary password
+                        temp_password = secrets.token_urlsafe(8)
 
-                    user = User.objects.create_user(
-                        username=username,
-                        email=email,   # ✔ None is allowed
-                        password=temp_password,
-                        first_name=first_name,
-                        last_name=last_name,
-                    )
+                        # Create User Account
+                        user = User.objects.create_user(
+                            username=username,
+                            email=email,
+                            password=temp_password,
+                            first_name=first_name,
+                            last_name=last_name,
+                        )
 
-                    if hasattr(user, "role"):
-                        user.role = "parent"
-                        user.save()
+                        # Assign role if model has `role`
+                        if hasattr(user, "role"):
+                            user.role = "parent"
+                            user.save()
 
-                    # Create Parent Profile
-                    parent_profile = form.save(commit=False)
-                    parent_profile.user = user
-                    parent_profile.save()
-                    form.save_m2m()
+                        # Create Parent Profile
+                        parent_profile = form.save(commit=False)
+                        parent_profile.user = user
+                        parent_profile.save()
+                        form.save_m2m()
 
-                    children_selected = (
-                        form.cleaned_data.get("children")
-                        or form.cleaned_data.get("students")
-                    )
+                        # Attach children / students
+                        children_selected = (
+                            form.cleaned_data.get("children")
+                            or form.cleaned_data.get("students")
+                        )
 
-                    if children_selected:
-                        field = "children" if hasattr(parent_profile, "children") else "students"
-                        getattr(parent_profile, field).set(children_selected)
+                        if children_selected:
+                            field = "children" if hasattr(parent_profile, "children") else "students"
+                            getattr(parent_profile, field).set(children_selected)
 
-                    messages.success(
-                        request,
-                        f"Parent '{full_name}' added successfully. "
-                        f"Username: {username} | Temporary Password: {temp_password}"
-                    )
-                    return redirect("manage_parents")
+                        messages.success(
+                            request,
+                            f"Parent '{full_name}' added successfully. "
+                            f"Username: {username} | Temporary Password: {temp_password}"
+                        )
+                        return redirect("manage_parents")
 
-            except Exception as exc:
-                logger.exception("Unexpected error: %s", exc)
-                messages.error(request, "Unexpected error occurred. Please try again.")
+                except Exception as inner_exc:
+                    logger.error(f"❗ Error while saving parent: {inner_exc}", exc_info=True)
+                    messages.error(request, f"⚠️ Saving failed: {inner_exc}")
+            
+            else:
+                messages.error(request, "⚠️ Please correct the highlighted errors.")
 
         else:
-            messages.error(request, "Please correct the highlighted errors.")
+            form = ParentProfileForm()
 
-    else:
-        form = ParentProfileForm()
+        return render(request, "accounts/parent_form.html", {
+            "form": form,
+            "title": "Add Parent"
+        })
 
-    return render(request, "accounts/parent_form.html", {"form": form, "title": "Add Parent"})
+    except Exception as exc:
+        # Top-level catch
+        logger.error(f"🔥 UNEXPECTED ERROR in add_parent: {exc}", exc_info=True)
+        return render(request, "accounts/parent_form.html", {
+            "form": ParentProfileForm(),
+            "title": "Add Parent",
+            "error_message": str(exc),
+        })
 
 
 @login_required
@@ -389,76 +405,82 @@ def edit_parent(request, pk):
     parent = get_object_or_404(Parent, pk=pk)
     user = parent.user
 
-    if request.method == "POST":
-        form = ParentProfileForm(request.POST, request.FILES, instance=parent)
+    try:
+        if request.method == "POST":
+            form = ParentProfileForm(request.POST, request.FILES, instance=parent)
 
-        if form.is_valid():
+            if form.is_valid():
 
-            username = form.cleaned_data.get("username", user.username).strip()
-            email = form.cleaned_data.get("email", "").strip() or None  # ✔ allow empty
-            full_name = form.cleaned_data.get(
-                "fullname", f"{user.first_name} {user.last_name}"
-            ).strip()
+                username = form.cleaned_data.get("username", user.username).strip()
+                email = form.cleaned_data.get("email", "").strip() or None
+                full_name = form.cleaned_data.get(
+                    "fullname", f"{user.first_name} {user.last_name}"
+                ).strip()
 
-            # Username uniqueness check
-            if User.objects.filter(username=username).exclude(pk=user.pk).exists():
-                messages.error(request, "❌ Username already exists.")
-                return render(request, "accounts/parent_form.html", {
-                    "form": form,
-                    "title": "Edit Parent",
-                    "editing": True,
-                })
-
-            # Email uniqueness only if provided
-            if email:
-                if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
-                    messages.error(request, "❌ Email already exists.")
+                # Username uniqueness
+                if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+                    messages.error(request, "❌ Username already exists.")
                     return render(request, "accounts/parent_form.html", {
                         "form": form,
                         "title": "Edit Parent",
                         "editing": True,
                     })
 
-            # Update User fields
-            parts = full_name.split()
-            user.first_name = parts[0] if parts else ""
-            user.last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
-            user.username = username
-            user.email = email  # ✔ safe even if None
-            user.save()
+                # Email uniqueness ONLY when email provided
+                if email:
+                    if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+                        messages.error(request, "❌ Email already exists.")
+                        return render(request, "accounts/parent_form.html", {
+                            "form": form,
+                            "title": "Edit Parent",
+                            "editing": True,
+                        })
 
-            # Update Profile
-            parent_obj = form.save(commit=False)
-            parent_obj.user = user
-            parent_obj.save()
-            form.save_m2m()
-
-            # Password update
-            new_password = request.POST.get("new_password")
-            if new_password:
-                user.set_password(new_password)
+                # Update user
+                parts = full_name.split()
+                user.first_name = parts[0] if parts else ""
+                user.last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+                user.username = username
+                user.email = email
                 user.save()
-                messages.success(request, "🔑 Parent updated and password reset.")
-            else:
-                messages.success(request, "✅ Parent updated successfully.")
 
-            return redirect("manage_parents")
+                # Update profile
+                parent_obj = form.save(commit=False)
+                parent_obj.user = user
+                parent_obj.save()
+                form.save_m2m()
 
-        messages.error(request, "⚠️ Please fix the errors below.")
+                # Optional password update
+                new_password = request.POST.get("new_password")
+                if new_password:
+                    user.set_password(new_password)
+                    user.save()
+                    messages.success(request, "🔑 Parent updated and password reset.")
+                else:
+                    messages.success(request, "✅ Parent updated successfully.")
 
-    else:
-        initial_data = {
-            'username': user.username,
-            'email': user.email,
-            'fullname': f"{user.first_name} {user.last_name}".strip(),
-        }
-        form = ParentProfileForm(instance=parent, initial=initial_data)
+                return redirect("manage_parents")
 
-    return render(request, "accounts/parent_form.html", {
-        "form": form,
-        "title": "Edit Parent",
-        "editing": True,
-    })
+            messages.error(request, "⚠️ Please fix the errors below.")
+
+        else:
+            initial_data = {
+                'username': user.username,
+                'email': user.email,
+                'fullname': f"{user.first_name} {user.last_name}".strip(),
+            }
+            form = ParentProfileForm(instance=parent, initial=initial_data)
+
+        return render(request, "accounts/parent_form.html", {
+            "form": form,
+            "title": "Edit Parent",
+            "editing": True,
+        })
+
+    except Exception as e:
+        # Catch ANY unexpected error (email constraint, save issues, etc.)
+        messages.error(request, f"❌ SYSTEM ERROR: {str(e)}")
+        return redirect("manage_parents")
 
 
 
